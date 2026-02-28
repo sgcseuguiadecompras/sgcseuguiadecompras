@@ -1,0 +1,200 @@
+{
+  "products": [
+    {
+      "id": "prod-1",
+      "slug": "fone-bluetooth-premium-anc",
+      "name": "Fone Bluetooth Premium com Cancelamento de Ruído",
+      "description": "Fone de ouvido sem fio com tecnologia de cancelamento de ruído ativo (ANC), proporcionando uma experiência sonora imersiva. Possui bateria de longa duração de até 40 horas, conexão Bluetooth 5.3 estável e design ergonômico com almofadas de espuma memory foam para máximo conforto durante uso prolongado.",
+      "shortDescription": "Fone wireless com ANC, 40h de bateria e Bluetooth 5.3",
+      "imageUrl": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80",
+      "images": [
+        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80",
+        "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=500&q=80"
+      ],
+      "categoryId": "cat-1",
+      "tags": ["fone", "bluetooth", "anc", "wireless"],
+      "pros": [
+        "Cancelamento de ruído excelente",
+        "Bateria de 40 horas",
+        "Bluetooth 5.3 estável",
+        "Confortável para uso prolongado"
+      ],
+      "cons": [
+        "Estojo de transporte um pouco grande",
+        "Não possui certificação IP para água"
+      ],
+      "verdict": "Excelente opção para quem busca qualidade sonora e conforto. O ANC é um dos melhores da categoria.",
+      "rating": 4.7,
+      "reviewCount": 3,
+      "clickCount": 1250,
+      "currentPrice": 189.90,
+      "originalPrice": 349.90,
+      "discount": 46,
+      "status": "active",
+      "isFeatured": true,
+      "isTopRated": true
+    },
+    {
+      "id": "prod-2",
+      "slug": "smartwatch-fitness-pro",
+      "name": "Smartwatch Fitness Pro com GPS Integrado",
+      "description": "Smartwatch completo para atletas e entusiastas de fitness. Possui GPS integrado de alta precisão, monitoramento cardíaco 24h, mais de 100 modos de exercício, resistência à água 5ATM e bateria que dura até 14 dias.",
+      "shortDescription": "Smartwatch com GPS, monitor cardíaco e 14 dias de bateria",
+      "imageUrl": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&q=80",
+      "images": [
+        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&q=80"
+      ],
+      "categoryId": "cat-1",
+      "tags": ["smartwatch", "fitness", "gps"],
+      "pros": [
+        "GPS muito preciso",
+        "Bateria dura 14 dias",
+        "Monitor cardíaco confiável",
+        "Resistente à água 5ATM"
+      ],
+      "cons": [
+        "Sem NFC para pagamentos",
+        "App poderia ser mais intuitivo"
+      ],
+      "verdict": "Ótimo para quem pratica esportes e quer um acompanhamento detalhado.",
+      "rating": 4.5,
+      "reviewCount": 1,
+      "clickCount": 890,
+      "currentPrice": 299.90,
+      "originalPrice": 499.90,
+      "discount": 40,
+      "status": "active",
+      "isFeatured": true,
+      "isTopRated": true
+    },
+    {
+      "id": "prod-3",
+      "slug": "air-fryer-digital-5l",
+      "name": "Air Fryer Digital 5L com Painel Touch",
+      "description": "Air Fryer de alta capacidade com painel digital touch screen e 8 programas pré-definidos. Cozinha de forma saudável usando até 80% menos óleo.",
+      "shortDescription": "Air Fryer 5L com painel touch e 8 programas",
+      "imageUrl": "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=500&q=80",
+      "images": [
+        "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=500&q=80"
+      ],
+      "categoryId": "cat-2",
+      "tags": ["air fryer", "cozinha", "saudável"],
+      "pros": [
+        "Capacidade grande de 5L",
+        "Fácil de limpar",
+        "Cozinha uniformemente",
+        "Programas automáticos práticos"
+      ],
+      "cons": [
+        "Ocupa espaço na bancada",
+        "Barulho durante o uso"
+      ],
+      "verdict": "Excelente investimento para quem quer comer mais saudável sem perder sabor.",
+      "rating": 4.8,
+      "reviewCount": 1,
+      "clickCount": 2100,
+      "currentPrice": 249.90,
+      "originalPrice": 399.90,
+      "discount": 38,
+      "status": "active",
+      "isFeatured": true,
+      "isTopRated": true
+    },
+    {
+      "id": "prod-4",
+      "slug": "kit-skincare-vitamina-c",
+      "name": "Kit Skincare Completo com Vitamina C",
+      "description": "Kit completo de cuidados com a pele contendo sérum de vitamina C, hidratante facial e protetor solar. Ideal para rotina diária.",
+      "shortDescription": "Kit com sérum vitamina C, hidratante e protetor solar",
+      "imageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&q=80",
+      "images": [
+        "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&q=80"
+      ],
+      "categoryId": "cat-3",
+      "tags": ["skincare", "vitamina c", "beleza"],
+      "pros": [
+        "Clareamento visível em 2 semanas",
+        "Produtos dermatologicamente testados",
+        "Ótimo custo-benefício",
+        "Embalagens práticas"
+      ],
+      "cons": [
+        "Pode irritar peles muito sensíveis"
+      ],
+      "verdict": "Kit completo e eficiente para iniciar uma rotina de skincare.",
+      "rating": 4.6,
+      "reviewCount": 0,
+      "clickCount": 1560,
+      "currentPrice": 79.90,
+      "originalPrice": 149.90,
+      "discount": 47,
+      "status": "active",
+      "isFeatured": true,
+      "isTopRated": false
+    },
+    {
+      "id": "prod-5",
+      "slug": "mochila-notebook-impermeavel",
+      "name": "Mochila para Notebook 15.6\" Impermeável",
+      "description": "Mochila executiva impermeável com compartimento acolchoado para notebook até 15.6 polegadas, porta USB integrada e design antirroubo.",
+      "shortDescription": "Mochila impermeável com porta USB e antirroubo",
+      "imageUrl": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&q=80",
+      "images": [
+        "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&q=80"
+      ],
+      "categoryId": "cat-4",
+      "tags": ["mochila", "notebook", "impermeável"],
+      "pros": [
+        "Muito espaço interno",
+        "Impermeável de verdade",
+        "Porta USB prática",
+        "Confortável para carregar"
+      ],
+      "cons": [
+        "Zíperes poderiam ser mais resistentes"
+      ],
+      "verdict": "Mochila robusta e funcional para o dia a dia.",
+      "rating": 4.4,
+      "reviewCount": 0,
+      "clickCount": 780,
+      "currentPrice": 89.90,
+      "originalPrice": 159.90,
+      "discount": 44,
+      "status": "active",
+      "isFeatured": true,
+      "isTopRated": false
+    },
+    {
+      "id": "prod-6",
+      "slug": "tenis-corrida-ultra-leve",
+      "name": "Tênis de Corrida Ultra Leve com Amortecimento",
+      "description": "Tênis de corrida com tecnologia de amortecimento em gel, cabedal respirável em mesh e solado de borracha de alta durabilidade.",
+      "shortDescription": "Tênis leve com amortecimento em gel e mesh respirável",
+      "imageUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&q=80",
+      "images": [
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&q=80"
+      ],
+      "categoryId": "cat-4",
+      "tags": ["tênis", "corrida", "esporte"],
+      "pros": [
+        "Muito leve e confortável",
+        "Amortecimento excelente",
+        "Boa ventilação",
+        "Design moderno"
+      ],
+      "cons": [
+        "Numeração pode variar"
+      ],
+      "verdict": "Tênis versátil para corrida e uso casual.",
+      "rating": 4.3,
+      "reviewCount": 0,
+      "clickCount": 650,
+      "currentPrice": 199.90,
+      "originalPrice": 329.90,
+      "discount": 39,
+      "status": "active",
+      "isFeatured": false,
+      "isTopRated": false
+    }
+  ]
+}

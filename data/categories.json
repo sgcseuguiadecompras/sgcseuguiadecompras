@@ -1,0 +1,64 @@
+{
+  "categories": [
+    {
+      "id": "cat-1",
+      "name": "Eletrônicos",
+      "slug": "eletronicos",
+      "description": "Smartphones, tablets, acessórios e mais",
+      "icon": "Smartphone",
+      "productCount": 2,
+      "isActive": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "cat-2",
+      "name": "Casa & Cozinha",
+      "slug": "casa-cozinha",
+      "description": "Eletrodomésticos, utensílios e decoração",
+      "icon": "Home",
+      "productCount": 1,
+      "isActive": true,
+      "sortOrder": 2
+    },
+    {
+      "id": "cat-3",
+      "name": "Beleza",
+      "slug": "beleza",
+      "description": "Skincare, maquiagem e cuidados pessoais",
+      "icon": "Sparkles",
+      "productCount": 1,
+      "isActive": true,
+      "sortOrder": 3
+    },
+    {
+      "id": "cat-4",
+      "name": "Moda",
+      "slug": "moda",
+      "description": "Roupas, calçados e acessórios",
+      "icon": "Shirt",
+      "productCount": 2,
+      "isActive": true,
+      "sortOrder": 4
+    },
+    {
+      "id": "cat-5",
+      "name": "Esportes",
+      "slug": "esportes",
+      "description": "Equipamentos, roupas e suplementos",
+      "icon": "Dumbbell",
+      "productCount": 0,
+      "isActive": true,
+      "sortOrder": 5
+    },
+    {
+      "id": "cat-6",
+      "name": "Livros",
+      "slug": "livros",
+      "description": "Livros físicos, e-books e audiobooks",
+      "icon": "BookOpen",
+      "productCount": 0,
+      "isActive": true,
+      "sortOrder": 6
+    }
+  ]
+}
