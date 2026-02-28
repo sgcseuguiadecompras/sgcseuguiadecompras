@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
-import { productRepository, reviewRepository, storeRepository } from "@/lib/db"
+import { supabaseProductRepository } from "@/lib/supabase/products"
+import { reviewRepository, storeRepository } from "@/lib/db"
 import { ProductGallery } from "@/components/product-gallery"
 import { ProductInfo } from "@/components/product-info"
 import { ProductReviews } from "@/components/product-reviews"
@@ -12,7 +13,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const product = await productRepository.findBySlugWithRelations(slug)
+  const product = await supabaseProductRepository.findBySlugWithRelations(slug)
   if (!product) return { title: "Produto não encontrado" }
 
   return {
@@ -31,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params
-  const product = await productRepository.findBySlugWithRelations(slug)
+  const product = await supabaseProductRepository.findBySlugWithRelations(slug)
 
   if (!product) {
     notFound()
