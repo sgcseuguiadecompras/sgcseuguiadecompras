@@ -1,9 +1,9 @@
-import { productRepository } from "@/lib/db"
+import { supabaseProductRepository } from "@/lib/supabase/products"
 import { ProductCard } from "@/components/product-card"
 import { Award } from "lucide-react"
 
 export async function TopRatedProducts() {
-  const topRated = await productRepository.getTopRatedProducts(8)
+  const topRated = await supabaseProductRepository.getTopRatedProducts(8)
 
   return (
     <section className="bg-background py-16 md:py-20">

@@ -1,8 +1,8 @@
-import { productRepository } from "@/lib/db"
+import { supabaseProductRepository } from "@/lib/supabase/products"
 import { ProductCard } from "@/components/product-card"
 
 export async function FeaturedProducts() {
-  const featured = await productRepository.getFeaturedProducts(8)
+  const featured = await supabaseProductRepository.getFeaturedProducts(8)
 
   return (
     <section id="produtos" className="bg-secondary/30 py-16 md:py-20">

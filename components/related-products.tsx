@@ -1,4 +1,4 @@
-import { productRepository } from "@/lib/db"
+import { supabaseProductRepository } from "@/lib/supabase/products"
 import { ProductCard } from "@/components/product-card"
 import { Separator } from "@/components/ui/separator"
 import type { ProductWithRelations } from "@/lib/db"
@@ -8,7 +8,7 @@ interface RelatedProductsProps {
 }
 
 export async function RelatedProducts({ currentProduct }: RelatedProductsProps) {
-  const related = await productRepository.getRelatedProducts(currentProduct.id, 4)
+  const related = await supabaseProductRepository.getRelatedProducts(currentProduct.id, 4)
 
   if (related.length === 0) return null
 
