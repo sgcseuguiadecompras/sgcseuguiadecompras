@@ -1,9 +1,9 @@
 backend:
   name: github
-  repo: gscceguidaedecompras/gscceguidaedecompras
+  repo: gsqueueguidanceprops/gsqueueguidanceprops
   branch: main
-  site_domain: gscceguidaedecompras.vercel.app
-  base_url: https://gscceguidaedecompras.vercel.app
+  site_domain: gsqueueguidanceprops.vercel.app
+  base_url: https://gsqueueguidanceprops.vercel.app
   auth_endpoint: api/auth
 
 media_folder: "public/uploads"
@@ -22,6 +22,7 @@ collections:
       - { label: "Descrição", name: "descricao", widget: "text" }
       - { label: "Imagem", name: "imagem", widget: "string" }
       - { label: "Preço", name: "preco", widget: "string" }
-      - { label: "Avaliação", name: "avaliacao", widget: "number" }
+      - { label: "Avaliação", name: "avaliacao", widget: "number", value_type: "float", min: 0, max: 5, step: 0.1 }
       - { label: "Loja", name: "loja", widget: "string" }
       - { label: "Link Afiliado", name: "linkAfiliado", widget: "string" }
+      - { label: "Cupom", name: "cupom", widget: "string", required: false }
