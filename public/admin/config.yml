@@ -1,9 +1,9 @@
 backend:
   name: github
-  repo: sgcsequidaidecompras/sgcsequidaidecompras
+  repo: gscceguidaedecompras/gscceguidaedecompras
   branch: main
-  site_domain: sgcsequidaidecompras.vercel.app
-  base_url: https://sgcsequidaidecompras.vercel.app
+  site_domain: gscceguidaedecompras.vercel.app
+  base_url: https://gscceguidaedecompras.vercel.app
   auth_endpoint: api/auth
 
 media_folder: "public/uploads"
@@ -24,4 +24,4 @@ collections:
       - { label: "Preço", name: "preco", widget: "string" }
       - { label: "Avaliação", name: "avaliacao", widget: "number" }
       - { label: "Loja", name: "loja", widget: "string" }
-      - { label: "Link", name: "linkAfiliado", widget: "string" }
+      - { label: "Link Afiliado", name: "linkAfiliado", widget: "string" }
