@@ -1,0 +1,48 @@
+{
+  "stores": [
+    {
+      "id": "store-1",
+      "name": "Amazon",
+      "slug": "amazon",
+      "logoUrl": "/stores/amazon.png",
+      "websiteUrl": "https://amazon.com.br",
+      "affiliateProgram": "Amazon Associates",
+      "commissionRate": 8,
+      "isActive": true,
+      "priority": 1
+    },
+    {
+      "id": "store-2",
+      "name": "Shopee",
+      "slug": "shopee",
+      "logoUrl": "/stores/shopee.png",
+      "websiteUrl": "https://shopee.com.br",
+      "affiliateProgram": "Shopee Affiliates",
+      "commissionRate": 10,
+      "isActive": true,
+      "priority": 2
+    },
+    {
+      "id": "store-3",
+      "name": "Mercado Livre",
+      "slug": "mercado-livre",
+      "logoUrl": "/stores/mercadolivre.png",
+      "websiteUrl": "https://mercadolivre.com.br",
+      "affiliateProgram": "Mercado Livre Affiliates",
+      "commissionRate": 6,
+      "isActive": true,
+      "priority": 3
+    },
+    {
+      "id": "store-4",
+      "name": "Magazine Luiza",
+      "slug": "magalu",
+      "logoUrl": "/stores/magalu.png",
+      "websiteUrl": "https://magazineluiza.com.br",
+      "affiliateProgram": "Magalu Affiliates",
+      "commissionRate": 5,
+      "isActive": true,
+      "priority": 4
+    }
+  ]
+}

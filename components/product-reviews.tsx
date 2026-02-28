@@ -1,0 +1,170 @@
+import { Star, ThumbsUp, ThumbsDown, MessageSquare, CheckCircle } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import { Separator } from "@/components/ui/separator"
+import type { ProductWithRelations, Review } from "@/lib/db"
+
+interface ProductReviewsProps {
+  product: ProductWithRelations
+  reviews: Review[] // Reviews vinculados ao productId interno
+}
+
+function RatingBreakdown({ reviews, totalReviews }: { reviews: Review[]; totalReviews: number }) {
+  const ratingCounts = [5, 4, 3, 2, 1].map(rating => ({
+    rating,
+    count: reviews.filter(r => r.rating === rating).length,
+    percentage: totalReviews > 0
+      ? (reviews.filter(r => r.rating === rating).length / totalReviews) * 100
+      : 0,
+  }))
+
+  return (
+    <div className="flex flex-col gap-2">
+      {ratingCounts.map(({ rating, count, percentage }) => (
+        <div key={rating} className="flex items-center gap-3">
+          <span className="w-8 text-right text-sm text-muted-foreground">{rating}</span>
+          <Star className="h-3.5 w-3.5 fill-primary text-primary" />
+          <Progress value={percentage} className="h-2 flex-1" />
+          <span className="w-8 text-sm text-muted-foreground">{count}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ReviewCard({ review }: { review: Review }) {
+  return (
+    <div className="rounded-lg border border-border bg-card p-5">
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+              {review.authorName.charAt(0)}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium text-foreground">{review.authorName}</p>
+                {review.isVerified && (
+                  <Badge variant="secondary" className="flex items-center gap-1 text-xs">
+                    <CheckCircle className="h-3 w-3" />
+                    Compra verificada
+                  </Badge>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">{new Date(review.createdAt).toLocaleDateString('pt-BR')}</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-0.5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star
+              key={i}
+              className={`h-3.5 w-3.5 ${
+                i < review.rating ? "fill-primary text-primary" : "fill-muted text-muted"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      <h4 className="mt-3 text-sm font-semibold text-foreground">{review.title}</h4>
+      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{review.content}</p>
+
+      {/* Prós e contras da review */}
+      {(review.pros && review.pros.length > 0) || (review.cons && review.cons.length > 0) ? (
+        <div className="mt-3 flex flex-wrap gap-4 text-xs">
+          {review.pros && review.pros.length > 0 && (
+            <div className="flex items-start gap-1">
+              <ThumbsUp className="mt-0.5 h-3 w-3 text-green-600" />
+              <span className="text-muted-foreground">{review.pros.join(", ")}</span>
+            </div>
+          )}
+          {review.cons && review.cons.length > 0 && (
+            <div className="flex items-start gap-1">
+              <ThumbsDown className="mt-0.5 h-3 w-3 text-red-500" />
+              <span className="text-muted-foreground">{review.cons.join(", ")}</span>
+            </div>
+          )}
+        </div>
+      ) : null}
+
+      <div className="mt-3 flex items-center gap-4">
+        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+          <ThumbsUp className="h-3 w-3" />
+          {review.helpfulCount} pessoas acharam útil
+        </span>
+        {review.notHelpfulCount > 0 && (
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <ThumbsDown className="h-3 w-3" />
+            {review.notHelpfulCount}
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export function ProductReviews({ product, reviews }: ProductReviewsProps) {
+  const avgRating = reviews.length > 0
+    ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
+    : product.rating
+
+  return (
+    <section className="mt-12 lg:mt-16">
+      <Separator className="mb-8" />
+
+      <div className="flex items-center gap-2">
+        <MessageSquare className="h-5 w-5 text-primary" />
+        <h2 className="font-[family-name:var(--font-heading)] text-xl font-bold text-foreground md:text-2xl">
+          Avaliações
+        </h2>
+        <Badge variant="secondary">{product.reviewCount}</Badge>
+      </div>
+
+      <div className="mt-6 grid gap-8 lg:grid-cols-3">
+        {/* Rating Summary */}
+        <div className="rounded-xl border border-border bg-card p-6">
+          <div className="flex flex-col items-center text-center">
+            <span className="text-4xl font-bold text-foreground">{avgRating.toFixed(1)}</span>
+            <div className="mt-2 flex items-center gap-0.5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  className={`h-5 w-5 ${
+                    i < Math.floor(avgRating) ? "fill-primary text-primary" : "fill-muted text-muted"
+                  }`}
+                />
+              ))}
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Baseado em {product.reviewCount} avaliações
+            </p>
+          </div>
+
+          <Separator className="my-4" />
+
+          <RatingBreakdown reviews={reviews} totalReviews={reviews.length} />
+
+          <p className="mt-4 text-center text-xs text-muted-foreground">
+            Em breve você poderá deixar sua avaliação
+          </p>
+        </div>
+
+        {/* Review List */}
+        <div className="flex flex-col gap-4 lg:col-span-2">
+          {reviews.length > 0 ? (
+            reviews.map((review) => (
+              <ReviewCard key={review.id} review={review} />
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-12 text-center">
+              <MessageSquare className="mb-3 h-10 w-10 text-muted-foreground/40" />
+              <p className="text-sm font-medium text-foreground">Nenhuma avaliação ainda</p>
+              <p className="mt-1 text-xs text-muted-foreground">Este produto ainda não possui avaliações de usuários.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}
