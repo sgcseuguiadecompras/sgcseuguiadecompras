@@ -1,1 +1,28 @@
+backend:
+  name: github
+  repo: sgcseuguiadecompras/sgcseuguiadecompras
+  branch: main
+  site_domain: sgcseuguiadecompras.vercel.app
 
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+collections:
+  - name: "produtos"
+    label: "Produtos"
+    folder: "data"
+    create: true
+    extension: "json"
+    format: "json"
+    slug: "{{id}}"
+    identifier_field: "id"
+    fields:
+      - { label: "ID", name: "id", widget: "string", hint: "Identificador único (sem espaços, use - )" }
+      - { label: "Nome do Produto", name: "nome", widget: "string" }
+      - { label: "Descrição", name: "descricao", widget: "text" }
+      - { label: "Imagem URL", name: "imagem", widget: "string", hint: "Link da imagem do produto" }
+      - { label: "Preço", name: "preco", widget: "string", hint: "Ex: R$ 129,90" }
+      - { label: "Avaliação", name: "avaliacao", widget: "number", value_type: "float", min: 0, max: 5, step: 0.1 }
+      - { label: "Loja", name: "loja", widget: "string", hint: "Shopee, Mercado Livre, Amazon..." }
+      - { label: "Link Afiliado", name: "linkAfiliado", widget: "string" }
+      - { label: "Cupom", name: "cupom", widget: "string", required: false }
