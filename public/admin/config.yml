@@ -1,8 +1,10 @@
 backend:
   name: github
-  repo: sgcsequiaidecompras/sgcsequiaidecompras
+  repo: sgcsequidaidecompras/sgcsequidaidecompras
   branch: main
-  site_domain: sgcsequiaidecompras.vercel.app
+  site_domain: sgcsequidaidecompras.vercel.app
+  base_url: https://sgcsequidaidecompras.vercel.app
+  auth_endpoint: api/auth
 
 media_folder: "public/uploads"
 public_folder: "/uploads"
@@ -12,17 +14,14 @@ collections:
     label: "Produtos"
     folder: "data"
     create: true
-    extension: "json"
-    format: "json"
+    extension: json
     slug: "{{id}}"
-    identifier_field: "id"
     fields:
       - { label: "ID", name: "id", widget: "string" }
       - { label: "Nome", name: "nome", widget: "string" }
       - { label: "Descrição", name: "descricao", widget: "text" }
       - { label: "Imagem", name: "imagem", widget: "string" }
       - { label: "Preço", name: "preco", widget: "string" }
-      - { label: "Avaliação", name: "avaliacao", widget: "number", value_type: "float", min: 0, max: 5, step: 0.1 }
+      - { label: "Avaliação", name: "avaliacao", widget: "number" }
       - { label: "Loja", name: "loja", widget: "string" }
-      - { label: "Link Afiliado", name: "linkAfiliado", widget: "string" }
-      - { label: "Cupom", name: "cupom", widget: "string", required: false }
+      - { label: "Link", name: "linkAfiliado", widget: "string" }
