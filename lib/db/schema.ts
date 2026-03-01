@@ -61,7 +61,7 @@ export interface Product {
   shortDescription: string
   
   // Imagens
-  imageUrl: string
+  imageUrl: string | string[]
   images: string[]
   
   // Categorização

@@ -13,15 +13,32 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const affiliateLink = product.activeLink?.url || "#"
   
+  // Obter a primeira imagem (compativel com string ou array)
+  const getFirstImage = () => {
+    if (Array.isArray(product.imageUrl)) {
+      return product.imageUrl[0] || null
+    }
+    return product.imageUrl || null
+  }
+  const firstImage = getFirstImage()
+  
   return (
     <div className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5">
       {/* Image */}
       <div className="relative aspect-square overflow-hidden bg-secondary">
-        <div className="flex h-full items-center justify-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10">
-            <Star className="h-10 w-10 text-primary/40" />
+        {firstImage ? (
+          <img
+            src={firstImage}
+            alt={product.name}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10">
+              <Star className="h-10 w-10 text-primary/40" />
+            </div>
           </div>
-        </div>
+        )}
         {product.discount && (
           <Badge className="absolute left-3 top-3 bg-primary text-primary-foreground">
             -{product.discount}%

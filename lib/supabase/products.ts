@@ -4,14 +4,26 @@ import type { ProductWithRelations } from '@/lib/db/schema'
 
 // Converte produto do Supabase para o formato do app
 function mapProdutoToProduct(produto: ProdutoComRelacoes): ProductWithRelations {
+  // Tratar imagem como array ou string
+  const getImages = (): string[] => {
+    if (Array.isArray(produto.imagem)) {
+      return produto.imagem.filter(img => img && img.trim() !== '')
+    }
+    if (typeof produto.imagem === 'string' && produto.imagem) {
+      return [produto.imagem]
+    }
+    return []
+  }
+  const images = getImages()
+  
   return {
     id: produto.id,
     slug: produto.id, // usar ID como slug se não existir
     name: produto.nome,
     description: produto.descricao || '',
     shortDescription: produto.descricao?.substring(0, 100) || '',
-    imageUrl: produto.imagem || '',
-    images: produto.imagem ? [produto.imagem] : [],
+    imageUrl: images,
+    images: images,
     categoryId: produto.categorias?.[0]?.id || '',
     tags: [],
     pros: [],
