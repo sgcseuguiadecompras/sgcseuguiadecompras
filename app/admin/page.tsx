@@ -56,7 +56,7 @@ interface Produto {
   id: string
   nome: string
   descricao: string
-  imagem: string
+  imagem: string[] | string | null
   preco: number
   avaliacao: number
   loja_id: string | null
@@ -70,7 +70,7 @@ interface Produto {
 const emptyProduto = {
   nome: "",
   descricao: "",
-  imagem: "",
+  imagens: [""] as string[],
   preco: 0,
   avaliacao: 0,
   loja_id: "",
@@ -160,10 +160,17 @@ export default function AdminPage() {
 
   function openEditProdutoDialog(produto: Produto) {
     setEditingProdutoId(produto.id)
+    // Converter imagem para array se necessário
+    let imagens: string[] = [""]
+    if (Array.isArray(produto.imagem)) {
+      imagens = produto.imagem.length > 0 ? produto.imagem : [""]
+    } else if (typeof produto.imagem === "string" && produto.imagem) {
+      imagens = [produto.imagem]
+    }
     setProdutoForm({
       nome: produto.nome,
       descricao: produto.descricao || "",
-      imagem: produto.imagem || "",
+      imagens,
       preco: produto.preco,
       avaliacao: produto.avaliacao || 0,
       loja_id: produto.loja_id || "",
@@ -182,11 +189,15 @@ export default function AdminPage() {
         : "/api/admin/produtos"
       const method = editingProdutoId ? "PUT" : "POST"
 
+      // Filtrar imagens vazias
+      const imagensFiltradas = produtoForm.imagens.filter(img => img.trim() !== "")
+      
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...produtoForm,
+          imagem: imagensFiltradas,
           preco: Number(produtoForm.preco),
           avaliacao: Number(produtoForm.avaliacao),
           loja_id: produtoForm.loja_id || null,
@@ -416,6 +427,28 @@ export default function AdminPage() {
       categoria_ids: prev.categoria_ids.includes(catId)
         ? prev.categoria_ids.filter(id => id !== catId)
         : [...prev.categoria_ids, catId]
+    }))
+  }
+
+  // Funções para gerenciar múltiplas imagens
+  function addImageField() {
+    setProdutoForm(prev => ({
+      ...prev,
+      imagens: [...prev.imagens, ""]
+    }))
+  }
+
+  function removeImageField(index: number) {
+    setProdutoForm(prev => ({
+      ...prev,
+      imagens: prev.imagens.filter((_, i) => i !== index)
+    }))
+  }
+
+  function updateImageField(index: number, value: string) {
+    setProdutoForm(prev => ({
+      ...prev,
+      imagens: prev.imagens.map((img, i) => i === index ? value : img)
     }))
   }
 
@@ -717,13 +750,38 @@ export default function AdminPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="imagem">URL da Imagem</Label>
-                <Input
-                  id="imagem"
-                  value={produtoForm.imagem}
-                  onChange={(e) => setProdutoForm({ ...produtoForm, imagem: e.target.value })}
-                  placeholder="https://..."
-                />
+                <Label>Imagens</Label>
+                <div className="space-y-2">
+                  {produtoForm.imagens.map((img, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Input
+                        value={img}
+                        onChange={(e) => updateImageField(index, e.target.value)}
+                        placeholder="https://..."
+                      />
+                      {produtoForm.imagens.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => removeImageField(index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addImageField}
+                    className="w-full"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Adicionar outra imagem
+                  </Button>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">

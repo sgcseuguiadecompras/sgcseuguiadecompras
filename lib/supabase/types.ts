@@ -29,7 +29,7 @@ export interface Produto {
   id: string
   nome: string
   descricao?: string
-  imagem?: string
+  imagem?: string[] | string | null  // Agora é um array de strings
   preco: number
   avaliacao?: number
   loja_id?: string
