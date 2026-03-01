@@ -7,6 +7,15 @@ async function isAuthenticated() {
   return cookieStore.get("admin_session")?.value === "authenticated"
 }
 
+function generateSlug(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+}
+
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -19,18 +28,13 @@ export async function PUT(
   const supabase = await createClient()
   const body = await request.json()
 
+  const slug = generateSlug(body.nome)
+
   const { data, error } = await supabase
-    .from("produtos")
+    .from("categorias")
     .update({
       nome: body.nome,
-      descricao: body.descricao,
-      imagem: body.imagem,
-      preco: body.preco,
-      avaliacao: body.avaliacao,
-      loja_id: body.loja_id || null,
-      cupom_id: body.cupom_id || null,
-      link_afiliado: body.link_afiliado,
-      updated_at: new Date().toISOString(),
+      slug: slug,
     })
     .eq("id", id)
     .select()
@@ -38,18 +42,6 @@ export async function PUT(
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-
-  // Atualizar categorias: remover antigas e inserir novas
-  await supabase.from("produto_categorias").delete().eq("produto_id", id)
-
-  if (body.categoria_ids && body.categoria_ids.length > 0) {
-    const categoriasInsert = body.categoria_ids.map((catId: string) => ({
-      produto_id: id,
-      categoria_id: catId,
-    }))
-
-    await supabase.from("produto_categorias").insert(categoriasInsert)
   }
 
   return NextResponse.json(data)
@@ -66,8 +58,22 @@ export async function DELETE(
   const { id } = await params
   const supabase = await createClient()
 
+  // Verificar se há produtos vinculados
+  const { data: produtos } = await supabase
+    .from("produto_categorias")
+    .select("produto_id")
+    .eq("categoria_id", id)
+    .limit(1)
+
+  if (produtos && produtos.length > 0) {
+    return NextResponse.json(
+      { error: "Não é possível excluir: há produtos vinculados a esta categoria" },
+      { status: 400 }
+    )
+  }
+
   const { error } = await supabase
-    .from("produtos")
+    .from("categorias")
     .delete()
     .eq("id", id)
 

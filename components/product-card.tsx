@@ -11,11 +11,10 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const affiliateLink = product.activeLink?.url || "#"
+  
   return (
-    <Link
-      href={`/produto/${product.slug}`}
-      className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5"
-    >
+    <div className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5">
       {/* Image */}
       <div className="relative aspect-square overflow-hidden bg-secondary">
         <div className="flex h-full items-center justify-center">
@@ -74,11 +73,25 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* CTA */}
-        <Button size="sm" className="mt-4 w-full gap-2" variant="default">
-          Ver Detalhes
-          <ExternalLink className="h-3.5 w-3.5" />
-        </Button>
+        <div className="mt-4 flex gap-2">
+          <Button size="sm" className="flex-1" variant="outline" asChild>
+            <Link href={`/produto/${product.slug}`}>
+              Ver Detalhes
+            </Link>
+          </Button>
+          <Button
+            size="sm"
+            className="flex-1 gap-1"
+            variant="default"
+            asChild
+          >
+            <a href={affiliateLink} target="_blank" rel="noopener noreferrer">
+              Ver Oferta
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </Button>
+        </div>
       </div>
-    </Link>
+    </div>
   )
 }
