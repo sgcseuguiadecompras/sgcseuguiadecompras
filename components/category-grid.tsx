@@ -1,6 +1,6 @@
 import Link from "next/link"
-import { Smartphone, Home, Shirt, Sparkles, Dumbbell, BookOpen, Gamepad2, Car } from "lucide-react"
-import { categoryRepository } from "@/lib/db"
+import { Smartphone, Home, Shirt, Sparkles, Dumbbell, BookOpen, Gamepad2, Car, Package } from "lucide-react"
+import { supabaseCategoryRepository } from "@/lib/supabase/categories"
 
 const iconMap: Record<string, React.ElementType> = {
   Smartphone,
@@ -11,10 +11,11 @@ const iconMap: Record<string, React.ElementType> = {
   BookOpen,
   Gamepad2,
   Car,
+  Package,
 }
 
 export async function CategoryGrid() {
-  const categories = await categoryRepository.getActiveCategories()
+  const categories = await supabaseCategoryRepository.getActiveCategories()
   
   return (
     <section id="categorias" className="bg-background py-16 md:py-20">
