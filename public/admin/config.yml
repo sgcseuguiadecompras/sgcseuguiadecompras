@@ -26,3 +26,4 @@ collections:
       - { label: "Loja", name: "loja", widget: "string" }
       - { label: "Link Afiliado", name: "linkAfiliado", widget: "string" }
       - { label: "Cupom", name: "cupom", widget: "string", required: false }
+
