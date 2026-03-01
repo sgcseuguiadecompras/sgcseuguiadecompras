@@ -1,221 +1,422 @@
-import Link from "next/link"
-import { 
-  Package, 
-  Tag, 
-  Link2, 
-  Store, 
-  MessageSquare, 
-  BarChart3,
-  Plus,
-  ArrowLeft,
-  Database
-} from "lucide-react"
+"use client"
+
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { productRepository, couponRepository, storeRepository, reviewRepository, categoryRepository } from "@/lib/db"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Pencil, Trash2, Plus, LogOut } from "lucide-react"
 
-export default async function AdminPage() {
-  // Buscar estatísticas
-  const products = await productRepository.getFeaturedProducts(100)
-  const coupons = await couponRepository.getActiveCoupons(100)
-  const stores = await storeRepository.getActiveStores()
-  const categories = await categoryRepository.getActiveCategories()
-  
-  // Calcular métricas
-  const totalProducts = products.length
-  const totalCoupons = coupons.length
-  const totalStores = stores.length
-  const totalCategories = categories.length
-  const totalClicks = products.reduce((acc, p) => acc + (p.clickCount || 0), 0)
+interface Loja {
+  id: string
+  nome: string
+}
 
-  const stats = [
-    { label: "Produtos", value: totalProducts, icon: Package, color: "text-blue-500" },
-    { label: "Cupons Ativos", value: totalCoupons, icon: Tag, color: "text-green-500" },
-    { label: "Lojas", value: totalStores, icon: Store, color: "text-purple-500" },
-    { label: "Categorias", value: totalCategories, icon: Database, color: "text-orange-500" },
-    { label: "Cliques Totais", value: totalClicks.toLocaleString("pt-BR"), icon: BarChart3, color: "text-pink-500" },
-  ]
+interface Cupom {
+  id: string
+  codigo: string
+  descricao: string
+}
+
+interface Produto {
+  id: string
+  nome: string
+  descricao: string
+  imagem: string
+  preco: number
+  avaliacao: number
+  loja_id: string | null
+  cupom_id: string | null
+  link_afiliado: string
+  lojas: Loja | null
+  cupons: Cupom | null
+}
+
+const emptyProduto = {
+  nome: "",
+  descricao: "",
+  imagem: "",
+  preco: 0,
+  avaliacao: 0,
+  loja_id: "",
+  cupom_id: "",
+  link_afiliado: "",
+}
+
+export default function AdminPage() {
+  const router = useRouter()
+  const [produtos, setProdutos] = useState<Produto[]>([])
+  const [lojas, setLojas] = useState<Loja[]>([])
+  const [cupons, setCupons] = useState<Cupom[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [form, setForm] = useState(emptyProduto)
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  async function loadData() {
+    try {
+      const [produtosRes, lojasRes, cuponsRes] = await Promise.all([
+        fetch("/api/admin/produtos"),
+        fetch("/api/admin/lojas"),
+        fetch("/api/admin/cupons"),
+      ])
+
+      if (produtosRes.status === 401) {
+        router.push("/admin/login")
+        return
+      }
+
+      const [produtosData, lojasData, cuponsData] = await Promise.all([
+        produtosRes.json(),
+        lojasRes.json(),
+        cuponsRes.json(),
+      ])
+
+      setProdutos(produtosData)
+      setLojas(lojasData)
+      setCupons(cuponsData)
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleLogout() {
+    await fetch("/api/admin/auth", { method: "DELETE" })
+    router.push("/admin/login")
+  }
+
+  function openNewDialog() {
+    setEditingId(null)
+    setForm(emptyProduto)
+    setDialogOpen(true)
+  }
+
+  function openEditDialog(produto: Produto) {
+    setEditingId(produto.id)
+    setForm({
+      nome: produto.nome,
+      descricao: produto.descricao || "",
+      imagem: produto.imagem || "",
+      preco: produto.preco,
+      avaliacao: produto.avaliacao || 0,
+      loja_id: produto.loja_id || "",
+      cupom_id: produto.cupom_id || "",
+      link_afiliado: produto.link_afiliado || "",
+    })
+    setDialogOpen(true)
+  }
+
+  async function handleSave() {
+    setSaving(true)
+    try {
+      const url = editingId
+        ? `/api/admin/produtos/${editingId}`
+        : "/api/admin/produtos"
+      const method = editingId ? "PUT" : "POST"
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          preco: Number(form.preco),
+          avaliacao: Number(form.avaliacao),
+          loja_id: form.loja_id || null,
+          cupom_id: form.cupom_id || null,
+        }),
+      })
+
+      if (res.ok) {
+        setDialogOpen(false)
+        loadData()
+      } else {
+        const error = await res.json()
+        alert("Erro: " + error.error)
+      }
+    } catch (error) {
+      console.error("Erro ao salvar:", error)
+      alert("Erro ao salvar produto")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm("Tem certeza que deseja excluir este produto?")) return
+
+    try {
+      const res = await fetch(`/api/admin/produtos/${id}`, {
+        method: "DELETE",
+      })
+
+      if (res.ok) {
+        loadData()
+      } else {
+        const error = await res.json()
+        alert("Erro: " + error.error)
+      }
+    } catch (error) {
+      console.error("Erro ao excluir:", error)
+      alert("Erro ao excluir produto")
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p>Carregando...</p>
+      </div>
+    )
+  }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button asChild variant="ghost" size="icon">
-            <Link href="/">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Painel Administrativo</h1>
-            <p className="text-sm text-muted-foreground">SGC - Seu Guia de Compras</p>
-          </div>
-        </div>
-        <Badge variant="outline" className="text-xs">
-          Versão 1.0
-        </Badge>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {stats.map((stat) => (
-          <Card key={stat.label}>
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className={`rounded-lg bg-muted p-2 ${stat.color}`}>
-                <stat.icon className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                <p className="text-xs text-muted-foreground">{stat.label}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mb-8">
-        <h2 className="mb-4 text-lg font-semibold text-foreground">Ações Rápidas</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="cursor-pointer transition-shadow hover:shadow-md">
-            <CardHeader className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-blue-500/10 p-2">
-                  <Plus className="h-5 w-5 text-blue-500" />
-                </div>
-                <div>
-                  <CardTitle className="text-sm">Novo Produto</CardTitle>
-                  <CardDescription className="text-xs">Adicionar produto ao catálogo</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
-
-          <Card className="cursor-pointer transition-shadow hover:shadow-md">
-            <CardHeader className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-green-500/10 p-2">
-                  <Tag className="h-5 w-5 text-green-500" />
-                </div>
-                <div>
-                  <CardTitle className="text-sm">Novo Cupom</CardTitle>
-                  <CardDescription className="text-xs">Cadastrar cupom de desconto</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
-
-          <Card className="cursor-pointer transition-shadow hover:shadow-md">
-            <CardHeader className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-purple-500/10 p-2">
-                  <Link2 className="h-5 w-5 text-purple-500" />
-                </div>
-                <div>
-                  <CardTitle className="text-sm">Gerenciar Links</CardTitle>
-                  <CardDescription className="text-xs">Links de afiliados</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
-
-          <Card className="cursor-pointer transition-shadow hover:shadow-md">
-            <CardHeader className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-orange-500/10 p-2">
-                  <MessageSquare className="h-5 w-5 text-orange-500" />
-                </div>
-                <div>
-                  <CardTitle className="text-sm">Reviews</CardTitle>
-                  <CardDescription className="text-xs">Moderar avaliações</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
-        </div>
-      </div>
-
-      {/* Products List */}
-      <div className="mb-8">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">Produtos Recentes</h2>
-          <Button variant="outline" size="sm">Ver todos</Button>
-        </div>
+    <div className="min-h-screen bg-muted/30 p-4 md:p-8">
+      <div className="mx-auto max-w-6xl">
         <Card>
-          <CardContent className="p-0">
-            <div className="divide-y divide-border">
-              {products.slice(0, 5).map((product) => (
-                <div key={product.id} className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 overflow-hidden rounded-lg bg-muted">
-                      <img 
-                        src={product.imageUrl} 
-                        alt={product.name}
-                        className="h-full w-full object-cover"
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Painel Administrativo - Produtos</CardTitle>
+            <div className="flex gap-2">
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={openNewDialog}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Novo Produto
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingId ? "Editar Produto" : "Novo Produto"}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="nome">Nome *</Label>
+                      <Input
+                        id="nome"
+                        value={form.nome}
+                        onChange={(e) =>
+                          setForm({ ...form, nome: e.target.value })
+                        }
+                        placeholder="Nome do produto"
                       />
                     </div>
-                    <div>
-                      <p className="font-medium text-foreground">{product.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        R$ {(product.currentPrice || 0).toFixed(2).replace(".", ",")}
-                      </p>
+                    <div className="space-y-2">
+                      <Label htmlFor="descricao">Descrição</Label>
+                      <Textarea
+                        id="descricao"
+                        value={form.descricao}
+                        onChange={(e) =>
+                          setForm({ ...form, descricao: e.target.value })
+                        }
+                        placeholder="Descrição do produto"
+                        rows={3}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="imagem">URL da Imagem</Label>
+                      <Input
+                        id="imagem"
+                        value={form.imagem}
+                        onChange={(e) =>
+                          setForm({ ...form, imagem: e.target.value })
+                        }
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="preco">Preço (R$) *</Label>
+                        <Input
+                          id="preco"
+                          type="number"
+                          step="0.01"
+                          value={form.preco}
+                          onChange={(e) =>
+                            setForm({ ...form, preco: Number(e.target.value) })
+                          }
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="avaliacao">Avaliação (0-5)</Label>
+                        <Input
+                          id="avaliacao"
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="5"
+                          value={form.avaliacao}
+                          onChange={(e) =>
+                            setForm({
+                              ...form,
+                              avaliacao: Number(e.target.value),
+                            })
+                          }
+                          placeholder="4.5"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="loja">Loja</Label>
+                      <Select
+                        value={form.loja_id}
+                        onValueChange={(value) =>
+                          setForm({ ...form, loja_id: value === "none" ? "" : value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione uma loja" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Nenhuma</SelectItem>
+                          {lojas.map((loja) => (
+                            <SelectItem key={loja.id} value={loja.id}>
+                              {loja.nome}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cupom">Cupom</Label>
+                      <Select
+                        value={form.cupom_id}
+                        onValueChange={(value) =>
+                          setForm({ ...form, cupom_id: value === "none" ? "" : value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione um cupom" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Nenhum</SelectItem>
+                          {cupons.map((cupom) => (
+                            <SelectItem key={cupom.id} value={cupom.id}>
+                              {cupom.codigo} - {cupom.descricao}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="link_afiliado">Link de Afiliado</Label>
+                      <Input
+                        id="link_afiliado"
+                        value={form.link_afiliado}
+                        onChange={(e) =>
+                          setForm({ ...form, link_afiliado: e.target.value })
+                        }
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2 pt-4">
+                      <Button
+                        variant="outline"
+                        onClick={() => setDialogOpen(false)}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button onClick={handleSave} disabled={saving}>
+                        {saving ? "Salvando..." : "Salvar"}
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={product.isFeatured ? "default" : "secondary"}>
-                      {product.isFeatured ? "Destaque" : "Normal"}
-                    </Badge>
-                    <span className="text-sm text-muted-foreground">
-                      {product.clickCount || 0} cliques
-                    </span>
-                  </div>
-                </div>
-              ))}
+                </DialogContent>
+              </Dialog>
+              <Button variant="outline" onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sair
+              </Button>
             </div>
+          </CardHeader>
+          <CardContent>
+            {produtos.length === 0 ? (
+              <p className="py-8 text-center text-muted-foreground">
+                Nenhum produto cadastrado ainda.
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Preço</TableHead>
+                      <TableHead>Avaliação</TableHead>
+                      <TableHead>Loja</TableHead>
+                      <TableHead>Cupom</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {produtos.map((produto) => (
+                      <TableRow key={produto.id}>
+                        <TableCell className="font-medium">
+                          {produto.nome}
+                        </TableCell>
+                        <TableCell>
+                          R$ {Number(produto.preco).toFixed(2)}
+                        </TableCell>
+                        <TableCell>{produto.avaliacao || "-"}</TableCell>
+                        <TableCell>{produto.lojas?.nome || "-"}</TableCell>
+                        <TableCell>{produto.cupons?.codigo || "-"}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openEditDialog(produto)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(produto.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </CardContent>
         </Card>
-      </div>
-
-      {/* Coupons List */}
-      <div>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">Cupons Ativos</h2>
-          <Button variant="outline" size="sm">Ver todos</Button>
-        </div>
-        <Card>
-          <CardContent className="p-0">
-            <div className="divide-y divide-border">
-              {coupons.slice(0, 5).map((coupon) => (
-                <div key={coupon.id} className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3">
-                    <code className="rounded bg-primary/10 px-2 py-1 text-sm font-semibold text-primary">
-                      {coupon.code}
-                    </code>
-                    <div>
-                      <p className="font-medium text-foreground">{coupon.description}</p>
-                      <p className="text-sm text-muted-foreground">{coupon.store?.name || "Loja"}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">{coupon.discountText}</Badge>
-                    <span className="text-sm text-muted-foreground">
-                      {coupon.usageCount} usos
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Footer Note */}
-      <div className="mt-8 rounded-lg border border-dashed border-border bg-muted/50 p-4">
-        <p className="text-center text-sm text-muted-foreground">
-          Para funcionalidades completas de CRUD, conecte um banco de dados (Supabase, Neon, etc.) 
-          através das integrações do v0.
-        </p>
       </div>
     </div>
   )
