@@ -4,7 +4,7 @@ import { NextResponse } from "next/server"
 
 async function isAuthenticated() {
   const cookieStore = await cookies()
-  return cookieStore.get("admin_session")?.value === "authenticated"
+  return cookieStore.get("admin_auth")?.value === "authenticated"
 }
 
 export async function GET() {
@@ -38,8 +38,8 @@ export async function POST(request: Request) {
     .from("cupons")
     .insert({
       codigo: body.codigo,
-      descricao: body.descricao,
-      validade: body.validade,
+      descricao: body.descricao || null,
+      validade: body.validade || null,
     })
     .select()
     .single()

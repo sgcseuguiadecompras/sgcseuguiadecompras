@@ -1,6 +1,6 @@
-import { createClient } from "@/lib/supabase/server"
-import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
+import { cookies } from "next/headers"
+import { createClient } from "@/lib/supabase/server"
 
 async function isAuthenticated() {
   const cookieStore = await cookies()
@@ -12,7 +12,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
+    return NextResponse.json({ error: "Nao autorizado" }, { status: 401 })
   }
 
   const { id } = await params
@@ -20,17 +20,11 @@ export async function PUT(
   const body = await request.json()
 
   const { data, error } = await supabase
-    .from("produtos")
+    .from("cupons")
     .update({
-      nome: body.nome,
+      codigo: body.codigo,
       descricao: body.descricao,
-      imagem: body.imagem,
-      preco: body.preco,
-      avaliacao: body.avaliacao,
-      loja_id: body.loja_id || null,
-      cupom_id: body.cupom_id || null,
-      link_afiliado: body.link_afiliado,
-      updated_at: new Date().toISOString(),
+      validade: body.validade || null,
     })
     .eq("id", id)
     .select()
@@ -38,18 +32,6 @@ export async function PUT(
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-
-  // Atualizar categorias: remover antigas e inserir novas
-  await supabase.from("produto_categorias").delete().eq("produto_id", id)
-
-  if (body.categoria_ids && body.categoria_ids.length > 0) {
-    const categoriasInsert = body.categoria_ids.map((catId: string) => ({
-      produto_id: id,
-      categoria_id: catId,
-    }))
-
-    await supabase.from("produto_categorias").insert(categoriasInsert)
   }
 
   return NextResponse.json(data)
@@ -60,14 +42,28 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
+    return NextResponse.json({ error: "Nao autorizado" }, { status: 401 })
   }
 
   const { id } = await params
   const supabase = await createClient()
 
-  const { error } = await supabase
+  // Verificar se tem produtos vinculados
+  const { data: produtos } = await supabase
     .from("produtos")
+    .select("id")
+    .eq("cupom_id", id)
+    .limit(1)
+
+  if (produtos && produtos.length > 0) {
+    return NextResponse.json(
+      { error: "Este cupom esta vinculado a produtos e nao pode ser excluido" },
+      { status: 400 }
+    )
+  }
+
+  const { error } = await supabase
+    .from("cupons")
     .delete()
     .eq("id", id)
 

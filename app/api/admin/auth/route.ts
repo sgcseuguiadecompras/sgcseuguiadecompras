@@ -9,7 +9,7 @@ export async function POST(request: Request) {
 
   if (password === ADMIN_PASSWORD) {
     const cookieStore = await cookies()
-    cookieStore.set("admin_session", "authenticated", {
+    cookieStore.set("admin_auth", "authenticated", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -24,6 +24,6 @@ export async function POST(request: Request) {
 
 export async function DELETE() {
   const cookieStore = await cookies()
-  cookieStore.delete("admin_session")
+  cookieStore.delete("admin_auth")
   return NextResponse.json({ success: true })
 }

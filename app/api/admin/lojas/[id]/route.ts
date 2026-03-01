@@ -4,7 +4,7 @@ import { NextResponse } from "next/server"
 
 async function isAuthenticated() {
   const cookieStore = await cookies()
-  return cookieStore.get("admin_session")?.value === "authenticated"
+  return cookieStore.get("admin_auth")?.value === "authenticated"
 }
 
 export async function PUT(

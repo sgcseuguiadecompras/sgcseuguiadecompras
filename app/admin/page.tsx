@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Pencil, Trash2, Plus, LogOut, Package, Tag, Store, Home } from "lucide-react"
+import { Pencil, Trash2, Plus, LogOut, Package, Tag, Store, Home, Ticket } from "lucide-react"
 
 interface Loja {
   id: string
@@ -43,6 +43,7 @@ interface Cupom {
   id: string
   codigo: string
   descricao: string
+  validade: string | null
 }
 
 interface Categoria {
@@ -80,6 +81,7 @@ const emptyProduto = {
 
 const emptyCategoria = { nome: "" }
 const emptyLoja = { nome: "", icone: "" }
+const emptyCupom = { codigo: "", descricao: "", validade: "" }
 
 export default function AdminPage() {
   const router = useRouter()
@@ -94,16 +96,19 @@ export default function AdminPage() {
   const [produtoDialogOpen, setProdutoDialogOpen] = useState(false)
   const [categoriaDialogOpen, setCategoriaDialogOpen] = useState(false)
   const [lojaDialogOpen, setLojaDialogOpen] = useState(false)
+  const [cupomDialogOpen, setCupomDialogOpen] = useState(false)
   
   // Editing IDs
   const [editingProdutoId, setEditingProdutoId] = useState<string | null>(null)
   const [editingCategoriaId, setEditingCategoriaId] = useState<string | null>(null)
   const [editingLojaId, setEditingLojaId] = useState<string | null>(null)
+  const [editingCupomId, setEditingCupomId] = useState<string | null>(null)
   
   // Forms
   const [produtoForm, setProdutoForm] = useState(emptyProduto)
   const [categoriaForm, setCategoriaForm] = useState(emptyCategoria)
   const [lojaForm, setLojaForm] = useState(emptyLoja)
+  const [cupomForm, setCupomForm] = useState(emptyCupom)
 
   useEffect(() => {
     loadData()
@@ -339,6 +344,72 @@ export default function AdminPage() {
     }
   }
 
+  // Cupom handlers
+  function openNewCupomDialog() {
+    setEditingCupomId(null)
+    setCupomForm(emptyCupom)
+    setCupomDialogOpen(true)
+  }
+
+  function openEditCupomDialog(cupom: Cupom) {
+    setEditingCupomId(cupom.id)
+    setCupomForm({
+      codigo: cupom.codigo,
+      descricao: cupom.descricao || "",
+      validade: cupom.validade ? cupom.validade.split("T")[0] : "",
+    })
+    setCupomDialogOpen(true)
+  }
+
+  async function handleSaveCupom() {
+    setSaving(true)
+    try {
+      const url = editingCupomId
+        ? `/api/admin/cupons/${editingCupomId}`
+        : "/api/admin/cupons"
+      const method = editingCupomId ? "PUT" : "POST"
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...cupomForm,
+          validade: cupomForm.validade || null,
+        }),
+      })
+
+      if (res.ok) {
+        setCupomDialogOpen(false)
+        loadData()
+      } else {
+        const error = await res.json()
+        alert("Erro: " + error.error)
+      }
+    } catch (error) {
+      console.error("Erro ao salvar:", error)
+      alert("Erro ao salvar cupom")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleDeleteCupom(id: string) {
+    if (!confirm("Tem certeza que deseja excluir este cupom?")) return
+
+    try {
+      const res = await fetch(`/api/admin/cupons/${id}`, { method: "DELETE" })
+      if (res.ok) {
+        loadData()
+      } else {
+        const error = await res.json()
+        alert("Erro: " + error.error)
+      }
+    } catch (error) {
+      console.error("Erro ao excluir:", error)
+      alert("Erro ao excluir cupom")
+    }
+  }
+
   function toggleCategoria(catId: string) {
     setProdutoForm(prev => ({
       ...prev,
@@ -393,6 +464,10 @@ export default function AdminPage() {
             <TabsTrigger value="lojas" className="gap-2">
               <Store className="h-4 w-4" />
               Lojas
+            </TabsTrigger>
+            <TabsTrigger value="cupons" className="gap-2">
+              <Ticket className="h-4 w-4" />
+              Cupons
             </TabsTrigger>
           </TabsList>
 
@@ -542,6 +617,62 @@ export default function AdminPage() {
                                   <Pencil className="h-4 w-4" />
                                 </Button>
                                 <Button variant="ghost" size="icon" onClick={() => handleDeleteLoja(loja.id)}>
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Cupons Tab */}
+          <TabsContent value="cupons">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Cupons ({cupons.length})</CardTitle>
+                <Button onClick={openNewCupomDialog}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Novo Cupom
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {cupons.length === 0 ? (
+                  <p className="py-8 text-center text-muted-foreground">
+                    Nenhum cupom cadastrado.
+                  </p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Codigo</TableHead>
+                          <TableHead>Descricao</TableHead>
+                          <TableHead>Validade</TableHead>
+                          <TableHead className="text-right">Acoes</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {cupons.map((cupom) => (
+                          <TableRow key={cupom.id}>
+                            <TableCell className="font-medium font-mono">{cupom.codigo}</TableCell>
+                            <TableCell>{cupom.descricao || "-"}</TableCell>
+                            <TableCell>
+                              {cupom.validade
+                                ? new Date(cupom.validade).toLocaleDateString("pt-BR")
+                                : "-"}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button variant="ghost" size="icon" onClick={() => openEditCupomDialog(cupom)}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleDeleteCupom(cupom.id)}>
                                   <Trash2 className="h-4 w-4 text-destructive" />
                                 </Button>
                               </div>
@@ -765,6 +896,55 @@ export default function AdminPage() {
                   Cancelar
                 </Button>
                 <Button onClick={handleSaveLoja} disabled={saving}>
+                  {saving ? "Salvando..." : "Salvar"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Cupom Dialog */}
+        <Dialog open={cupomDialogOpen} onOpenChange={setCupomDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>
+                {editingCupomId ? "Editar Cupom" : "Novo Cupom"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="cupom-codigo">Codigo *</Label>
+                <Input
+                  id="cupom-codigo"
+                  value={cupomForm.codigo}
+                  onChange={(e) => setCupomForm({ ...cupomForm, codigo: e.target.value.toUpperCase() })}
+                  placeholder="DESCONTO10"
+                  className="font-mono"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cupom-descricao">Descricao</Label>
+                <Input
+                  id="cupom-descricao"
+                  value={cupomForm.descricao}
+                  onChange={(e) => setCupomForm({ ...cupomForm, descricao: e.target.value })}
+                  placeholder="10% de desconto"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cupom-validade">Validade (opcional)</Label>
+                <Input
+                  id="cupom-validade"
+                  type="date"
+                  value={cupomForm.validade}
+                  onChange={(e) => setCupomForm({ ...cupomForm, validade: e.target.value })}
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setCupomDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleSaveCupom} disabled={saving}>
                   {saving ? "Salvando..." : "Salvar"}
                 </Button>
               </div>
