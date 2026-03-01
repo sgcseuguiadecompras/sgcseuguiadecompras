@@ -1,9 +1,9 @@
 backend:
   name: github
-  repo: sgcseuguiadecompras/sgcseuguiadecompras
+  repo: gsceuguiadecompras/gsceuguiadecompras
   branch: main
-  site_domain: sgcseuguiadecompras.vercel.app
-  base_url: https://sgcseuguiadecompras.vercel.app
+  site_domain: gsceuguiadecompras.vercel.app
+  base_url: https://gsceuguiadecompras.vercel.app
   auth_endpoint: api/auth
 
 media_folder: "public/uploads"
