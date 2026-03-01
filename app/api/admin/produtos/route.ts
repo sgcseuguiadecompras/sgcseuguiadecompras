@@ -27,7 +27,22 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json(produtos)
+  // Buscar categorias de cada produto
+  const produtosComCategorias = await Promise.all(
+    (produtos || []).map(async (produto) => {
+      const { data: cats } = await supabase
+        .from("produto_categorias")
+        .select("categoria_id, categorias(id, nome)")
+        .eq("produto_id", produto.id)
+      
+      return {
+        ...produto,
+        categorias: cats?.map(c => c.categorias).filter(Boolean) || []
+      }
+    })
+  )
+
+  return NextResponse.json(produtosComCategorias)
 }
 
 export async function POST(request: Request) {
@@ -55,6 +70,16 @@ export async function POST(request: Request) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  // Inserir relações com categorias
+  if (body.categoria_ids && body.categoria_ids.length > 0) {
+    const categoriasInsert = body.categoria_ids.map((catId: string) => ({
+      produto_id: data.id,
+      categoria_id: catId,
+    }))
+
+    await supabase.from("produto_categorias").insert(categoriasInsert)
   }
 
   return NextResponse.json(data)
