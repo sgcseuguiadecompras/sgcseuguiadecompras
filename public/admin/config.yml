@@ -1,9 +1,9 @@
 backend:
   name: github
-  repo: gsqueueguidanceprops/gsqueueguidanceprops
+  repo: sgcseuguiadecompras/sgcseuguiadecompras
   branch: main
-  site_domain: gsqueueguidanceprops.vercel.app
-  base_url: https://gsqueueguidanceprops.vercel.app
+  site_domain: sgcseuguiadecompras.vercel.app
+  base_url: https://sgcseuguiadecompras.vercel.app
   auth_endpoint: api/auth
 
 media_folder: "public/uploads"
