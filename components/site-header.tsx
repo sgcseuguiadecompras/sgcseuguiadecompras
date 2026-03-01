@@ -68,8 +68,11 @@ export function SiteHeader() {
             size="icon"
             className="hidden h-9 w-9 text-muted-foreground md:flex"
             aria-label="Buscar"
+            asChild
           >
-            <Search className="h-4 w-4" />
+            <Link href="/busca">
+              <Search className="h-4 w-4" />
+            </Link>
           </Button>
 
           <Button asChild className="hidden md:inline-flex" size="sm">
