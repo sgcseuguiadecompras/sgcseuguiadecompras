@@ -1,11 +1,11 @@
 import Link from "next/link"
 import { Tag, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { couponRepository } from "@/lib/db"
+import { supabaseCouponRepository } from "@/lib/supabase/coupons"
 import { CouponCard } from "@/components/coupon-card"
 
 export async function CouponsHighlight() {
-  const coupons = await couponRepository.getActiveCoupons(3)
+  const coupons = await supabaseCouponRepository.getActiveCoupons(3)
 
   return (
     <section className="bg-secondary/30 py-16 md:py-20">
