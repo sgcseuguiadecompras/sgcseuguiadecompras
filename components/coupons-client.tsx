@@ -61,7 +61,7 @@ function CouponCardFull({ coupon }: { coupon: CouponWithRelations }) {
           )}
         </div>
 
-        <p className="mt-3 text-base font-medium text-foreground">
+        <p className="mt-3 text-base font-medium text-foreground whitespace-pre-line">
           {coupon.description || "Cupom de desconto"}
         </p>
 
@@ -81,30 +81,34 @@ function CouponCardFull({ coupon }: { coupon: CouponWithRelations }) {
       </div>
 
       <div className="mt-4 space-y-2">
-        <div className="flex items-center gap-2">
-          <code className="flex-1 rounded-lg border border-dashed border-primary/30 bg-primary/5 px-4 py-2.5 text-center font-mono text-sm font-bold text-primary">
-            {coupon.code}
-          </code>
-          <Button
-            onClick={handleCopy}
-            variant={copied ? "default" : "outline"}
-            className="gap-1.5 px-4"
-            aria-label={copied ? "Cupom copiado" : "Copiar cupom"}
-          >
-            {copied ? (
-              <>
-                <CheckCircle2 className="h-4 w-4" />
-                Copiado
-              </>
-            ) : (
-              <>
-                <Copy className="h-4 w-4" />
-                Copiar
-              </>
-            )}
-          </Button>
-        </div>
+        {/* Exibir codigo se existir */}
+        {coupon.code && coupon.code.trim() !== "" && (
+          <div className="flex items-center gap-2">
+            <code className="flex-1 rounded-lg border border-dashed border-primary/30 bg-primary/5 px-4 py-2.5 text-center font-mono text-sm font-bold text-primary">
+              {coupon.code}
+            </code>
+            <Button
+              onClick={handleCopy}
+              variant={copied ? "default" : "outline"}
+              className="gap-1.5 px-4"
+              aria-label={copied ? "Cupom copiado" : "Copiar cupom"}
+            >
+              {copied ? (
+                <>
+                  <CheckCircle2 className="h-4 w-4" />
+                  Copiado
+                </>
+              ) : (
+                <>
+                  <Copy className="h-4 w-4" />
+                  Copiar
+                </>
+              )}
+            </Button>
+          </div>
+        )}
         
+        {/* Botao Resgatar se tiver link */}
         {coupon.link && (
           <a
             href={coupon.link}
@@ -114,7 +118,7 @@ function CouponCardFull({ coupon }: { coupon: CouponWithRelations }) {
             className="block"
           >
             <Button variant="default" size="sm" className="w-full gap-1">
-              Resgatar Cupom
+              Resgatar
               <ExternalLink className="h-3.5 w-3.5" />
             </Button>
           </a>

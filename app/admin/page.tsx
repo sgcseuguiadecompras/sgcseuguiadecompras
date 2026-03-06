@@ -1032,11 +1032,12 @@ export default function AdminPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="cupom-descricao">Descricao</Label>
-                <Input
+                <Textarea
                   id="cupom-descricao"
                   value={cupomForm.descricao}
                   onChange={(e) => setCupomForm({ ...cupomForm, descricao: e.target.value })}
-                  placeholder="10% de desconto"
+                  placeholder="10% de desconto em toda a loja"
+                  rows={3}
                 />
               </div>
               <div className="space-y-2">
