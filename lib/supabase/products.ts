@@ -79,7 +79,7 @@ function mapProdutoToProduct(produto: ProdutoComRelacoes): ProductWithRelations 
 }
 
 export const supabaseProductRepository = {
-  // Buscar produtos em destaque
+  // Buscar produtos em destaque (ordenados por data de criação, mais novos primeiro)
   async getFeaturedProducts(limit = 8): Promise<ProductWithRelations[]> {
     const supabase = await createClient()
     
@@ -90,6 +90,7 @@ export const supabaseProductRepository = {
         lojas (*),
         cupons (*)
       `)
+      .order('created_at', { ascending: false })
       .limit(limit)
     
     if (error) {
@@ -153,7 +154,7 @@ export const supabaseProductRepository = {
     return produtosComCategorias.map(mapProdutoToProduct)
   },
 
-  // Buscar todos os produtos
+  // Buscar todos os produtos (ordenados por data de criação, mais novos primeiro)
   async getAllProducts(): Promise<ProductWithRelations[]> {
     const supabase = await createClient()
     
@@ -164,6 +165,7 @@ export const supabaseProductRepository = {
         lojas (*),
         cupons (*)
       `)
+      .order('created_at', { ascending: false })
     
     if (error) {
       console.error('[v0] Erro ao buscar todos produtos:', error)

@@ -40,6 +40,7 @@ export async function POST(request: Request) {
       codigo: body.codigo,
       descricao: body.descricao || null,
       validade: body.validade || null,
+      link: body.link || null,
     })
     .select()
     .single()

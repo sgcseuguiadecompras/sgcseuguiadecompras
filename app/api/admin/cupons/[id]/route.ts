@@ -25,6 +25,7 @@ export async function PUT(
       codigo: body.codigo,
       descricao: body.descricao,
       validade: body.validade || null,
+      link: body.link || null,
     })
     .eq("id", id)
     .select()

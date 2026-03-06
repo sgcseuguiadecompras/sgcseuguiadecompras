@@ -44,12 +44,14 @@ interface Cupom {
   codigo: string
   descricao: string
   validade: string | null
+  link: string | null
 }
 
 interface Categoria {
   id: string
   nome: string
   slug: string
+  icone: string | null
 }
 
 interface Produto {
@@ -79,9 +81,9 @@ const emptyProduto = {
   categoria_ids: [] as string[],
 }
 
-const emptyCategoria = { nome: "" }
+const emptyCategoria = { nome: "", icone: "" }
 const emptyLoja = { nome: "", icone: "" }
-const emptyCupom = { codigo: "", descricao: "", validade: "" }
+const emptyCupom = { codigo: "", descricao: "", validade: "", link: "" }
 
 export default function AdminPage() {
   const router = useRouter()
@@ -246,7 +248,7 @@ export default function AdminPage() {
 
   function openEditCategoriaDialog(categoria: Categoria) {
     setEditingCategoriaId(categoria.id)
-    setCategoriaForm({ nome: categoria.nome })
+    setCategoriaForm({ nome: categoria.nome, icone: categoria.icone || "" })
     setCategoriaDialogOpen(true)
   }
 
@@ -368,6 +370,7 @@ export default function AdminPage() {
       codigo: cupom.codigo,
       descricao: cupom.descricao || "",
       validade: cupom.validade ? cupom.validade.split("T")[0] : "",
+      link: cupom.link || "",
     })
     setCupomDialogOpen(true)
   }
@@ -386,6 +389,7 @@ export default function AdminPage() {
         body: JSON.stringify({
           ...cupomForm,
           validade: cupomForm.validade || null,
+          link: cupomForm.link || null,
         }),
       })
 
@@ -910,6 +914,15 @@ export default function AdminPage() {
                   O slug sera gerado automaticamente a partir do nome.
                 </p>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="cat-icone">URL do Icone (opcional)</Label>
+                <Input
+                  id="cat-icone"
+                  value={categoriaForm.icone}
+                  onChange={(e) => setCategoriaForm({ ...categoriaForm, icone: e.target.value })}
+                  placeholder="https://..."
+                />
+              </div>
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => setCategoriaDialogOpen(false)}>
                   Cancelar
@@ -996,6 +1009,15 @@ export default function AdminPage() {
                   type="date"
                   value={cupomForm.validade}
                   onChange={(e) => setCupomForm({ ...cupomForm, validade: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cupom-link">Link da oferta (opcional)</Label>
+                <Input
+                  id="cupom-link"
+                  value={cupomForm.link}
+                  onChange={(e) => setCupomForm({ ...cupomForm, link: e.target.value })}
+                  placeholder="https://..."
                 />
               </div>
               <div className="flex justify-end gap-2 pt-4">

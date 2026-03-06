@@ -1,11 +1,15 @@
 import { createClient } from './server'
-import type { CouponWithStore } from '@/lib/db/schema'
+import type { CouponWithRelations } from '@/lib/db/schema'
+
+// Tipo para cupom com loja
+type CouponWithStore = CouponWithRelations
 
 interface CupomSupabase {
   id: string
   codigo: string
   descricao: string | null
   validade: string | null
+  link: string | null
 }
 
 // Converte cupom do Supabase para o formato do app
@@ -25,6 +29,7 @@ function mapCupomToCoupon(cupom: CupomSupabase, loja?: { id: string; nome: strin
     usageCount: 0,
     isActive: true,
     isVerified: true,
+    link: cupom.link || undefined,
     createdAt: new Date(),
     updatedAt: new Date(),
     store: loja ? {

@@ -50,6 +50,7 @@ export async function POST(request: Request) {
     .insert({
       nome: body.nome,
       slug: slug,
+      icone: body.icone || null,
     })
     .select()
     .single()

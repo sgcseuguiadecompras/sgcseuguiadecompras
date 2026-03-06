@@ -1,6 +1,6 @@
 "use client"
 
-import { Copy, CheckCircle2, BadgeCheck } from "lucide-react"
+import { Copy, CheckCircle2, BadgeCheck, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useState } from "react"
@@ -55,6 +55,19 @@ export function CouponCard({ coupon }: CouponCardProps) {
           )}
         </Button>
       </div>
+      {coupon.link && (
+        <a
+          href={coupon.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2"
+        >
+          <Button variant="default" size="sm" className="w-full gap-1">
+            Ver Oferta
+            <ExternalLink className="h-3.5 w-3.5" />
+          </Button>
+        </a>
+      )}
     </div>
   )
 }

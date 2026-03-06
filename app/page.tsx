@@ -1,7 +1,6 @@
 import { HeroSection } from "@/components/hero-section"
 import { CategoryGrid } from "@/components/category-grid"
-import { FeaturedProducts } from "@/components/featured-products"
-import { TopRatedProducts } from "@/components/top-rated-products"
+import { AllProducts } from "@/components/all-products"
 import { CouponsHighlight } from "@/components/coupons-highlight"
 import { SocialProof } from "@/components/social-proof"
 
@@ -27,9 +26,8 @@ export default function HomePage() {
       />
       <HeroSection />
       <CategoryGrid />
-      <FeaturedProducts />
+      <AllProducts />
       <CouponsHighlight />
-      <TopRatedProducts />
       <SocialProof />
     </>
   )
