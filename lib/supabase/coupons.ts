@@ -4,16 +4,25 @@ import type { CouponWithRelations } from '@/lib/db/schema'
 // Tipo para cupom com loja
 type CouponWithStore = CouponWithRelations
 
+interface LojaSupabase {
+  id: string
+  nome: string
+  icone?: string | null
+}
+
 interface CupomSupabase {
   id: string
   codigo: string
   descricao: string | null
   validade: string | null
   link: string | null
+  loja_id: string | null
+  lojas: LojaSupabase | null
 }
 
 // Converte cupom do Supabase para o formato do app
-function mapCupomToCoupon(cupom: CupomSupabase, loja?: { id: string; nome: string } | null): CouponWithStore {
+function mapCupomToCoupon(cupom: CupomSupabase): CouponWithStore {
+  const loja = cupom.lojas
   return {
     id: cupom.id,
     storeId: loja?.id || '',
@@ -53,7 +62,7 @@ export const supabaseCouponRepository = {
     
     const { data, error } = await supabase
       .from('cupons')
-      .select('*')
+      .select('*, lojas(*)')
       .or(`validade.is.null,validade.gte.${new Date().toISOString()}`)
       .limit(limit)
     
@@ -62,22 +71,7 @@ export const supabaseCouponRepository = {
       return []
     }
 
-    // Buscar lojas que têm produtos com esses cupons
-    const cuponsComLojas = await Promise.all(
-      (data || []).map(async (cupom) => {
-        const { data: produtoData } = await supabase
-          .from('produtos')
-          .select('lojas (*)')
-          .eq('cupom_id', cupom.id)
-          .limit(1)
-          .single()
-        
-        const loja = produtoData?.lojas as { id: string; nome: string } | null
-        return mapCupomToCoupon(cupom, loja)
-      })
-    )
-
-    return cuponsComLojas
+    return (data || []).map((cupom) => mapCupomToCoupon(cupom as CupomSupabase))
   },
 
   // Buscar todos os cupons
@@ -86,28 +80,14 @@ export const supabaseCouponRepository = {
     
     const { data, error } = await supabase
       .from('cupons')
-      .select('*')
+      .select('*, lojas(*)')
     
     if (error) {
       console.error('[v0] Erro ao buscar todos cupons:', error)
       return []
     }
 
-    const cuponsComLojas = await Promise.all(
-      (data || []).map(async (cupom) => {
-        const { data: produtoData } = await supabase
-          .from('produtos')
-          .select('lojas (*)')
-          .eq('cupom_id', cupom.id)
-          .limit(1)
-          .single()
-        
-        const loja = produtoData?.lojas as { id: string; nome: string } | null
-        return mapCupomToCoupon(cupom, loja)
-      })
-    )
-
-    return cuponsComLojas
+    return (data || []).map((cupom) => mapCupomToCoupon(cupom as CupomSupabase))
   },
 
   // Buscar cupom por ID
@@ -116,7 +96,7 @@ export const supabaseCouponRepository = {
     
     const { data, error } = await supabase
       .from('cupons')
-      .select('*')
+      .select('*, lojas(*)')
       .eq('id', id)
       .single()
     
@@ -125,14 +105,6 @@ export const supabaseCouponRepository = {
       return null
     }
 
-    const { data: produtoData } = await supabase
-      .from('produtos')
-      .select('lojas (*)')
-      .eq('cupom_id', data.id)
-      .limit(1)
-      .single()
-    
-    const loja = produtoData?.lojas as { id: string; nome: string } | null
-    return mapCupomToCoupon(data, loja)
+    return mapCupomToCoupon(data as CupomSupabase)
   },
 }

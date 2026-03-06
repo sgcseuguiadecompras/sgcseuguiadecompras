@@ -114,7 +114,7 @@ function CouponCardFull({ coupon }: { coupon: CouponWithRelations }) {
             className="block"
           >
             <Button variant="default" size="sm" className="w-full gap-1">
-              Ver Oferta
+              Resgatar Cupom
               <ExternalLink className="h-3.5 w-3.5" />
             </Button>
           </a>
