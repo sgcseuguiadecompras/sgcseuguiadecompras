@@ -23,6 +23,18 @@ export function CouponCard({ coupon }: CouponCardProps) {
 
   const storeName = coupon.store?.name || "Loja"
 
+  const handleOfferClick = () => {
+    // Registrar clique no banco
+    fetch("/api/cliques", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        produto_id: null,
+        cupom_id: coupon.id,
+      }),
+    }).catch(() => {})
+  }
+
   return (
     <div className="flex flex-col justify-between rounded-xl border border-border bg-card p-4 transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
       <div>
@@ -61,6 +73,7 @@ export function CouponCard({ coupon }: CouponCardProps) {
           target="_blank"
           rel="noopener noreferrer"
           className="mt-2"
+          onClick={handleOfferClick}
         >
           <Button variant="default" size="sm" className="w-full gap-1">
             Ver Oferta

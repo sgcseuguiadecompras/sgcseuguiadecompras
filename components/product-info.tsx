@@ -17,6 +17,18 @@ export function ProductInfo({ product }: ProductInfoProps) {
   // Obter o link de afiliado
   const affiliateLink = product.activeLink?.url || "#"
 
+  const handleOfferClick = () => {
+    // Registrar clique no banco
+    fetch("/api/cliques", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        produto_id: product.id,
+        cupom_id: product.activeCoupon?.id || null,
+      }),
+    }).catch(() => {})
+  }
+
   return (
     <div className="flex flex-col">
       {/* Category & Store */}
@@ -78,7 +90,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       {/* CTA - abre link de afiliado em nova aba */}
       <div className="mt-6 flex flex-col gap-3">
         <Button asChild size="lg" className="w-full gap-2 text-base">
-          <a href={affiliateLink} target="_blank" rel="noopener noreferrer">
+          <a href={affiliateLink} target="_blank" rel="noopener noreferrer" onClick={handleOfferClick}>
             <ShieldCheck className="h-5 w-5" />
             Ver Oferta Verificada
           </a>

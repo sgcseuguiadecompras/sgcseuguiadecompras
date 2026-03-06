@@ -12,6 +12,18 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const affiliateLink = product.activeLink?.url || "#"
+
+  const handleOfferClick = () => {
+    // Registrar clique no banco
+    fetch("/api/cliques", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        produto_id: product.id,
+        cupom_id: product.activeCoupon?.id || null,
+      }),
+    }).catch(() => {})
+  }
   
   // Obter a primeira imagem (compativel com string ou array)
   const getFirstImage = () => {
@@ -102,7 +114,7 @@ export function ProductCard({ product }: ProductCardProps) {
             variant="default"
             asChild
           >
-            <a href={affiliateLink} target="_blank" rel="noopener noreferrer">
+            <a href={affiliateLink} target="_blank" rel="noopener noreferrer" onClick={handleOfferClick}>
               Ver Oferta
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
