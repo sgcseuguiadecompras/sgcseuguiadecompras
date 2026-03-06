@@ -32,7 +32,12 @@ export async function CategoryGrid() {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
           {categories.map((cat) => {
             const Icon = iconMap[cat.icon] || Package
-            const hasCustomIcon = cat.imageUrl && cat.imageUrl.trim() !== ""
+            const iconValue = cat.imageUrl?.trim() || ""
+            // Verifica se é uma classe Font Awesome (começa com "fa" ou "fas", "far", "fab", etc.)
+            const isFontAwesome = iconValue.startsWith("fa")
+            // Verifica se é uma URL de imagem
+            const isImageUrl = iconValue.startsWith("http") || iconValue.startsWith("/")
+            
             return (
               <Link
                 key={cat.id}
@@ -40,9 +45,11 @@ export async function CategoryGrid() {
                 className="group flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary transition-colors group-hover:bg-primary/10 overflow-hidden">
-                  {hasCustomIcon ? (
+                  {isFontAwesome ? (
+                    <i className={`${iconValue} text-xl text-primary`} aria-hidden="true" />
+                  ) : isImageUrl ? (
                     <img 
-                      src={cat.imageUrl} 
+                      src={iconValue} 
                       alt={cat.name} 
                       className="h-6 w-6 object-contain"
                     />

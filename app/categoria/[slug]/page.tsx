@@ -48,17 +48,33 @@ export default async function CategoriaPage({ params }: Props) {
               </Link>
             </Button>
             <div className="flex items-center gap-3">
-              {categoria.imageUrl ? (
-                <img 
-                  src={categoria.imageUrl} 
-                  alt={categoria.name}
-                  className="h-10 w-10 object-contain"
-                />
-              ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                  <Package className="h-5 w-5 text-primary" />
-                </div>
-              )}
+              {(() => {
+                const iconValue = categoria.imageUrl?.trim() || ""
+                const isFontAwesome = iconValue.startsWith("fa")
+                const isImageUrl = iconValue.startsWith("http") || iconValue.startsWith("/")
+                
+                if (isFontAwesome) {
+                  return (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                      <i className={`${iconValue} text-xl text-primary`} aria-hidden="true" />
+                    </div>
+                  )
+                } else if (isImageUrl) {
+                  return (
+                    <img 
+                      src={iconValue} 
+                      alt={categoria.name}
+                      className="h-10 w-10 object-contain"
+                    />
+                  )
+                } else {
+                  return (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                      <Package className="h-5 w-5 text-primary" />
+                    </div>
+                  )
+                }
+              })()}
               <div>
                 <h1 className="text-2xl font-bold text-foreground">{categoria.name}</h1>
                 <p className="text-sm text-muted-foreground">
