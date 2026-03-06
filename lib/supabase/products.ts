@@ -290,4 +290,89 @@ export const supabaseProductRepository = {
 
     return produtosComCategorias.map(mapProdutoToProduct)
   },
+
+  // Buscar produtos por categoria (slug)
+  async getProductsByCategory(categorySlug: string): Promise<ProductWithRelations[]> {
+    const supabase = await createClient()
+    
+    // Primeiro, buscar a categoria pelo slug
+    const { data: categoria, error: catError } = await supabase
+      .from('categorias')
+      .select('id, nome, slug')
+      .eq('slug', categorySlug)
+      .single()
+    
+    if (catError || !categoria) {
+      console.error('[v0] Categoria não encontrada:', categorySlug)
+      return []
+    }
+
+    // Buscar os IDs dos produtos desta categoria
+    const { data: produtoCategorias } = await supabase
+      .from('produto_categorias')
+      .select('produto_id')
+      .eq('categoria_id', categoria.id)
+
+    if (!produtoCategorias || produtoCategorias.length === 0) {
+      return []
+    }
+
+    const produtoIds = produtoCategorias.map(pc => pc.produto_id)
+
+    // Buscar os produtos
+    const { data, error } = await supabase
+      .from('produtos')
+      .select(`
+        *,
+        lojas (*),
+        cupons (*)
+      `)
+      .in('id', produtoIds)
+      .order('created_at', { ascending: false })
+
+    if (error || !data) {
+      console.error('[v0] Erro ao buscar produtos da categoria:', error)
+      return []
+    }
+
+    // Buscar categorias para cada produto
+    const produtosComCategorias = await Promise.all(
+      data.map(async (produto) => {
+        const { data: categoriaData } = await supabase
+          .from('produto_categorias')
+          .select('categorias (*)')
+          .eq('produto_id', produto.id)
+        
+        return {
+          ...produto,
+          categorias: categoriaData?.map((pc: { categorias: unknown }) => pc.categorias).filter(Boolean) || [],
+        } as ProdutoComRelacoes
+      })
+    )
+
+    return produtosComCategorias.map(mapProdutoToProduct)
+  },
+
+  // Buscar categoria por slug
+  async getCategoryBySlug(slug: string) {
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase
+      .from('categorias')
+      .select('*')
+      .eq('slug', slug)
+      .single()
+    
+    if (error || !data) {
+      return null
+    }
+    
+    return {
+      id: data.id,
+      name: data.nome,
+      slug: data.slug,
+      icon: 'Package',
+      imageUrl: data.icone || undefined,
+    }
+  },
 }
