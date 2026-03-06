@@ -1,28 +1,21 @@
 "use client"
 
-import Link from "next/link"
-import { Star, ThumbsUp, ThumbsDown, ShieldCheck, Store as StoreIcon, Tag, Copy, CheckCircle2 } from "lucide-react"
+import { Star, ShieldCheck, Store as StoreIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import type { ProductWithRelations } from "@/lib/db"
-import { useState } from "react"
 
 interface ProductInfoProps {
   product: ProductWithRelations
 }
 
 export function ProductInfo({ product }: ProductInfoProps) {
-  const [copiedCoupon, setCopiedCoupon] = useState<string | null>(null)
-
-  const handleCopyCoupon = (code: string) => {
-    navigator.clipboard.writeText(code)
-    setCopiedCoupon(code)
-    setTimeout(() => setCopiedCoupon(null), 2000)
-  }
-
   const categoryName = product.category?.name || "Produto"
   const storeName = product.store?.name || "Loja parceira"
+  
+  // Obter o link de afiliado
+  const affiliateLink = product.activeLink?.url || "#"
 
   return (
     <div className="flex flex-col">
@@ -82,45 +75,13 @@ export function ProductInfo({ product }: ProductInfoProps) {
         {product.description}
       </p>
 
-      {/* Pros and Cons */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-lg border border-border bg-card p-4">
-          <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-foreground">
-            <ThumbsUp className="h-4 w-4 text-primary" />
-            Pontos Positivos
-          </h3>
-          <ul className="flex flex-col gap-1.5">
-            {product.pros.map((pro, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                {pro}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="rounded-lg border border-border bg-card p-4">
-          <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-foreground">
-            <ThumbsDown className="h-4 w-4 text-destructive" />
-            Pontos Negativos
-          </h3>
-          <ul className="flex flex-col gap-1.5">
-            {product.cons.map((con, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-destructive/60" />
-                {con}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      {/* CTA - redirects to internal /r/slug */}
+      {/* CTA - abre link de afiliado em nova aba */}
       <div className="mt-6 flex flex-col gap-3">
         <Button asChild size="lg" className="w-full gap-2 text-base">
-          <Link href={`/r/${product.slug}`}>
+          <a href={affiliateLink} target="_blank" rel="noopener noreferrer">
             <ShieldCheck className="h-5 w-5" />
             Ver Oferta Verificada
-          </Link>
+          </a>
         </Button>
         <p className="text-center text-xs text-muted-foreground">
           Você será redirecionado para a loja parceira de forma segura.
