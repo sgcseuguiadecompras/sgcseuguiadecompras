@@ -26,9 +26,10 @@ export async function PUT(
       descricao: body.descricao,
       validade: body.validade || null,
       link: body.link || null,
+      loja_id: body.loja_id || null,
     })
     .eq("id", id)
-    .select()
+    .select("*, lojas(*)")
     .single()
 
   if (error) {

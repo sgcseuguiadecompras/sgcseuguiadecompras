@@ -45,6 +45,8 @@ interface Cupom {
   descricao: string
   validade: string | null
   link: string | null
+  loja_id: string | null
+  lojas: Loja | null
 }
 
 interface Categoria {
@@ -83,7 +85,7 @@ const emptyProduto = {
 
 const emptyCategoria = { nome: "", icone: "" }
 const emptyLoja = { nome: "", icone: "" }
-const emptyCupom = { codigo: "", descricao: "", validade: "", link: "" }
+const emptyCupom = { codigo: "", descricao: "", validade: "", link: "", loja_id: "" }
 
 export default function AdminPage() {
   const router = useRouter()
@@ -371,6 +373,7 @@ export default function AdminPage() {
       descricao: cupom.descricao || "",
       validade: cupom.validade ? cupom.validade.split("T")[0] : "",
       link: cupom.link || "",
+      loja_id: cupom.loja_id || "",
     })
     setCupomDialogOpen(true)
   }
@@ -390,6 +393,7 @@ export default function AdminPage() {
           ...cupomForm,
           validade: cupomForm.validade || null,
           link: cupomForm.link || null,
+          loja_id: cupomForm.loja_id || null,
         }),
       })
 
@@ -997,6 +1001,25 @@ export default function AdminPage() {
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="cupom-loja">Loja</Label>
+                <Select
+                  value={cupomForm.loja_id}
+                  onValueChange={(value) => setCupomForm({ ...cupomForm, loja_id: value })}
+                >
+                  <SelectTrigger id="cupom-loja">
+                    <SelectValue placeholder="Selecione uma loja (opcional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Nenhuma loja</SelectItem>
+                    {lojas.map((loja) => (
+                      <SelectItem key={loja.id} value={loja.id}>
+                        {loja.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="cupom-codigo">Codigo *</Label>
                 <Input
