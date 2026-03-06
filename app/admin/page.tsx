@@ -1002,16 +1002,16 @@ export default function AdminPage() {
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="cupom-loja">Loja</Label>
+                <Label htmlFor="cupom-loja">Loja (opcional)</Label>
                 <Select
-                  value={cupomForm.loja_id}
-                  onValueChange={(value) => setCupomForm({ ...cupomForm, loja_id: value })}
+                  value={cupomForm.loja_id || "none"}
+                  onValueChange={(value) => setCupomForm({ ...cupomForm, loja_id: value === "none" ? "" : value })}
                 >
                   <SelectTrigger id="cupom-loja">
-                    <SelectValue placeholder="Selecione uma loja (opcional)" />
+                    <SelectValue placeholder="Selecione uma loja" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Nenhuma loja</SelectItem>
+                    <SelectItem value="none">Nenhuma loja</SelectItem>
                     {lojas.map((loja) => (
                       <SelectItem key={loja.id} value={loja.id}>
                         {loja.nome}
