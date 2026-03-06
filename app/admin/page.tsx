@@ -475,11 +475,25 @@ export default function AdminPage() {
             </Link>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/" target="_blank">
-                <Home className="mr-2 h-4 w-4" />
-                Ver Site
-              </Link>
+            <Button variant="ghost" size="sm" asChild>
+              <a href="/" target="_blank" rel="noopener noreferrer">
+                Inicio
+              </a>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <a href="/#categorias" target="_blank" rel="noopener noreferrer">
+                Categorias
+              </a>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <a href="/#produtos" target="_blank" rel="noopener noreferrer">
+                Produtos
+              </a>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <a href="/#cupons" target="_blank" rel="noopener noreferrer">
+                Cupons
+              </a>
             </Button>
             <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
