@@ -1,8 +1,10 @@
 "use client"
 
-import { Heart } from "lucide-react"
+import { useState } from "react"
+import { Heart, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useSalvosContext } from "@/contexts/salvos-context"
+import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
 interface SaveButtonProps {
@@ -21,12 +23,30 @@ export function SaveButton({
   className 
 }: SaveButtonProps) {
   const { isSalvo, toggleSalvo } = useSalvosContext()
+  const [saving, setSaving] = useState(false)
   const salvo = isSalvo(produtoId)
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    await toggleSalvo(produtoId, lojaId)
+    
+    setSaving(true)
+    try {
+      const success = await toggleSalvo(produtoId, lojaId)
+      if (success) {
+        if (salvo) {
+          toast.success("Produto removido dos salvos")
+        } else {
+          toast.success("Produto salvo com sucesso!")
+        }
+      } else {
+        toast.error("Erro ao salvar produto")
+      }
+    } catch {
+      toast.error("Erro ao processar")
+    } finally {
+      setSaving(false)
+    }
   }
 
   if (variant === "full") {
@@ -35,9 +55,14 @@ export function SaveButton({
         variant={salvo ? "default" : "outline"}
         size={size}
         onClick={handleClick}
+        disabled={saving}
         className={cn("gap-1.5", className)}
       >
-        <Heart className={cn("h-4 w-4", salvo && "fill-current")} />
+        {saving ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Heart className={cn("h-4 w-4", salvo && "fill-current")} />
+        )}
         {salvo ? "Salvo" : "Salvar"}
       </Button>
     )
@@ -48,6 +73,7 @@ export function SaveButton({
       variant="ghost"
       size="icon"
       onClick={handleClick}
+      disabled={saving}
       className={cn(
         "h-8 w-8 rounded-full",
         salvo 
@@ -57,7 +83,11 @@ export function SaveButton({
       )}
       aria-label={salvo ? "Remover dos salvos" : "Salvar produto"}
     >
-      <Heart className={cn("h-4 w-4", salvo && "fill-current")} />
+      {saving ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <Heart className={cn("h-4 w-4", salvo && "fill-current")} />
+      )}
     </Button>
   )
 }
