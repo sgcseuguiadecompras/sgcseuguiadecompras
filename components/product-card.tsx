@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Star, ExternalLink } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { SaveButton } from "@/components/save-button"
 import type { ProductWithRelations } from "@/lib/db"
 
 interface ProductCardProps {
@@ -56,9 +57,12 @@ export function ProductCard({ product }: ProductCardProps) {
             -{product.discount}%
           </Badge>
         )}
-        <Badge variant="outline" className="absolute right-3 top-3 border-border bg-card/80 backdrop-blur-sm">
-          {product.store?.name || "Loja"}
-        </Badge>
+        <div className="absolute right-3 top-3 flex flex-col gap-2">
+          <SaveButton produtoId={product.id} lojaId={product.store?.id} />
+          <Badge variant="outline" className="border-border bg-card/80 backdrop-blur-sm">
+            {product.store?.name || "Loja"}
+          </Badge>
+        </div>
       </div>
 
       {/* Content */}
