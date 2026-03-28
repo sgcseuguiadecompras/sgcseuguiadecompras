@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { SalvosProvider } from '@/contexts/salvos-context'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
+import { SocialSidebar } from '@/components/social-sidebar'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
@@ -75,6 +76,7 @@ export default function RootLayout({
               <main className="flex-1">{children}</main>
               <SiteFooter />
             </div>
+            <SocialSidebar />
             <Toaster />
           </SalvosProvider>
         </ThemeProvider>

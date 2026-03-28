@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Pencil, Trash2, Plus, LogOut, Package, Tag, Store, Home, Ticket } from "lucide-react"
+import { Pencil, Trash2, Plus, LogOut, Package, Tag, Store, Home, Ticket, MessageSquare } from "lucide-react"
 
 interface Loja {
   id: string
@@ -71,6 +71,13 @@ interface Produto {
   categorias: Categoria[]
 }
 
+interface Feedback {
+  id: number
+  mensagem: string
+  usuario_id: string | null
+  created_at: string
+}
+
 const emptyProduto = {
   nome: "",
   descricao: "",
@@ -93,6 +100,7 @@ export default function AdminPage() {
   const [lojas, setLojas] = useState<Loja[]>([])
   const [cupons, setCupons] = useState<Cupom[]>([])
   const [categorias, setCategorias] = useState<Categoria[]>([])
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   
@@ -120,11 +128,12 @@ export default function AdminPage() {
 
   async function loadData() {
     try {
-      const [produtosRes, lojasRes, cuponsRes, categoriasRes] = await Promise.all([
+      const [produtosRes, lojasRes, cuponsRes, categoriasRes, feedbacksRes] = await Promise.all([
         fetch("/api/admin/produtos"),
         fetch("/api/admin/lojas"),
         fetch("/api/admin/cupons"),
         fetch("/api/admin/categorias"),
+        fetch("/api/feedbacks"),
       ])
 
       if (produtosRes.status === 401) {
@@ -132,17 +141,19 @@ export default function AdminPage() {
         return
       }
 
-      const [produtosData, lojasData, cuponsData, categoriasData] = await Promise.all([
+      const [produtosData, lojasData, cuponsData, categoriasData, feedbacksData] = await Promise.all([
         produtosRes.json(),
         lojasRes.json(),
         cuponsRes.json(),
         categoriasRes.json(),
+        feedbacksRes.json(),
       ])
 
       setProdutos(produtosData)
       setLojas(lojasData)
       setCupons(cuponsData)
       setCategorias(categoriasData)
+      setFeedbacks(Array.isArray(feedbacksData) ? feedbacksData : [])
     } catch (error) {
       console.error("Erro ao carregar dados:", error)
     } finally {
@@ -524,6 +535,10 @@ export default function AdminPage() {
               <Ticket className="h-4 w-4" />
               Cupons
             </TabsTrigger>
+            <TabsTrigger value="feedbacks" className="gap-2">
+              <MessageSquare className="h-4 w-4" />
+              Feedbacks
+            </TabsTrigger>
           </TabsList>
 
           {/* Produtos Tab */}
@@ -736,6 +751,51 @@ export default function AdminPage() {
                         ))}
                       </TableBody>
                     </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Feedbacks Tab */}
+          <TabsContent value="feedbacks">
+            <Card>
+              <CardHeader>
+                <CardTitle>Feedbacks e Sugestões ({feedbacks.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {feedbacks.length === 0 ? (
+                  <p className="py-8 text-center text-muted-foreground">
+                    Nenhum feedback recebido ainda.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {feedbacks.map((feedback) => (
+                      <div
+                        key={feedback.id}
+                        className="rounded-lg border border-border bg-muted/30 p-4"
+                      >
+                        <p className="whitespace-pre-line text-sm text-foreground">
+                          {feedback.mensagem}
+                        </p>
+                        <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
+                          <span>
+                            {new Date(feedback.created_at).toLocaleDateString("pt-BR", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                          {feedback.usuario_id && (
+                            <span className="truncate max-w-[200px]">
+                              ID: {feedback.usuario_id.slice(0, 20)}...
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </CardContent>

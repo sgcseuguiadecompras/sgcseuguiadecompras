@@ -1,6 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { StatsFooter } from "@/components/stats-footer"
+import { FeedbackForm } from "@/components/feedback-form"
 
 const socialLinks = [
   {
@@ -105,18 +106,10 @@ export function SiteFooter() {
             </ul>
           </div>
 
-          {/* Support */}
+          {/* Feedback */}
           <div>
-            <h3 className="mb-3 text-sm font-semibold text-foreground">Suporte</h3>
-            <ul className="flex flex-col gap-2">
-              {footerLinks.suporte.map((link) => (
-                <li key={link.label}>
-                  <Link href={link.href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <h3 className="mb-3 text-sm font-semibold text-foreground">Deixe sua Sugestão</h3>
+            <FeedbackForm />
           </div>
         </div>
 
