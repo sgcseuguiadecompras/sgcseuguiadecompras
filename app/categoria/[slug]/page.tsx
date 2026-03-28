@@ -20,9 +20,38 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://seuguiadecompras.com.br"
+  const categoryUrl = `${baseUrl}/categoria/${slug}`
+  const description = `Encontre os melhores produtos de ${categoria.name} com as melhores ofertas e cupons de desconto.`
+
   return {
     title: `${categoria.name} | SGC - Seu Guia de Compras`,
-    description: `Encontre os melhores produtos de ${categoria.name} com as melhores ofertas e cupons de desconto.`,
+    description,
+    openGraph: {
+      title: `${categoria.name} | SGC - Seu Guia de Compras`,
+      description,
+      type: "website",
+      url: categoryUrl,
+      locale: "pt_BR",
+      siteName: "SGC - Seu Guia de Compras",
+      images: [
+        {
+          url: "/og-image.jpg",
+          width: 1200,
+          height: 630,
+          alt: `Produtos de ${categoria.name}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${categoria.name} | SGC`,
+      description,
+      images: ["/og-image.jpg"],
+    },
+    alternates: {
+      canonical: `/categoria/${slug}`,
+    },
   }
 }
 

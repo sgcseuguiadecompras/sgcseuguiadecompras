@@ -4,6 +4,8 @@ import { Star, ShieldCheck, Store as StoreIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { ShareButtons } from "@/components/share-buttons"
+import { SaveButton } from "@/components/save-button"
 import type { ProductWithRelations } from "@/lib/db"
 
 interface ProductInfoProps {
@@ -16,6 +18,10 @@ export function ProductInfo({ product }: ProductInfoProps) {
   
   // Obter o link de afiliado
   const affiliateLink = product.activeLink?.url || "#"
+  
+  // URL para compartilhamento
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : ""
+  const productUrl = `${baseUrl}/produto/${product.slug}`
 
   const handleOfferClick = () => {
     // Registrar clique no banco
@@ -86,6 +92,16 @@ export function ProductInfo({ product }: ProductInfoProps) {
       <p className="text-sm leading-relaxed text-muted-foreground">
         {product.description}
       </p>
+
+      {/* Actions: Salvar e Compartilhar */}
+      <div className="mt-4 flex items-center gap-2">
+        <SaveButton produtoId={product.id} lojaId={product.store?.id} variant="full" />
+        <ShareButtons 
+          url={productUrl} 
+          title={product.name} 
+          description={product.shortDescription} 
+        />
+      </div>
 
       {/* CTA - abre link de afiliado em nova aba */}
       <div className="mt-6 flex flex-col gap-3">
