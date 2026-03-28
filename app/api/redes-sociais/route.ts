@@ -1,17 +1,22 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { createClient } from "@supabase/supabase-js"
 
-// GET - Listar redes sociais (com filtro opcional de posição)
+// Criar cliente público sem cookies (acesso anônimo)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+// GET - Listar redes sociais (pública, sem autenticação)
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient(supabaseUrl, supabaseAnonKey)
     const { searchParams } = new URL(request.url)
     const posicao = searchParams.get("posicao")
 
     let query = supabase
       .from("redes_sociais")
       .select("*")
-      .order("nome")
+      .eq("ativo", true)
+      .order("ordem", { ascending: true })
 
     // Filtrar por posição se especificado
     if (posicao === "lateral") {
@@ -23,11 +28,13 @@ export async function GET(request: Request) {
     const { data, error } = await query
 
     if (error) {
+      console.error("[v0] Erro ao buscar redes sociais:", error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json(data || [])
-  } catch {
+  } catch (err) {
+    console.error("[v0] Erro interno redes-sociais:", err)
     return NextResponse.json({ error: "Erro interno" }, { status: 500 })
   }
 }
