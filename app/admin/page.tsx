@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Pencil, Trash2, Plus, LogOut, Package, Tag, Store, Home, Ticket, MessageSquare } from "lucide-react"
+import { Pencil, Trash2, Plus, LogOut, Package, Tag, Store, Home, Ticket, MessageSquare, Palette } from "lucide-react"
 
 interface Loja {
   id: string
@@ -78,6 +78,13 @@ interface Feedback {
   created_at: string
 }
 
+interface Tema {
+  cor_primaria: string
+  cor_fundo: string
+  fonte_padrao: string
+  layout_produtos: string
+}
+
 const emptyProduto = {
   nome: "",
   descricao: "",
@@ -101,6 +108,13 @@ export default function AdminPage() {
   const [cupons, setCupons] = useState<Cupom[]>([])
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([])
+  const [tema, setTema] = useState<Tema>({
+    cor_primaria: "#000000",
+    cor_fundo: "#FFFFFF",
+    fonte_padrao: "Inter",
+    layout_produtos: "grid",
+  })
+  const [temaSaving, setTemaSaving] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   
@@ -128,12 +142,13 @@ export default function AdminPage() {
 
   async function loadData() {
     try {
-      const [produtosRes, lojasRes, cuponsRes, categoriasRes, feedbacksRes] = await Promise.all([
+      const [produtosRes, lojasRes, cuponsRes, categoriasRes, feedbacksRes, temaRes] = await Promise.all([
         fetch("/api/admin/produtos"),
         fetch("/api/admin/lojas"),
         fetch("/api/admin/cupons"),
         fetch("/api/admin/categorias"),
         fetch("/api/feedbacks"),
+        fetch("/api/admin/tema"),
       ])
 
       if (produtosRes.status === 401) {
@@ -141,12 +156,13 @@ export default function AdminPage() {
         return
       }
 
-      const [produtosData, lojasData, cuponsData, categoriasData, feedbacksData] = await Promise.all([
+      const [produtosData, lojasData, cuponsData, categoriasData, feedbacksData, temaData] = await Promise.all([
         produtosRes.json(),
         lojasRes.json(),
         cuponsRes.json(),
         categoriasRes.json(),
         feedbacksRes.json(),
+        temaRes.json(),
       ])
 
       setProdutos(produtosData)
@@ -154,6 +170,7 @@ export default function AdminPage() {
       setCupons(cuponsData)
       setCategorias(categoriasData)
       setFeedbacks(Array.isArray(feedbacksData) ? feedbacksData : [])
+      if (temaData) setTema(temaData)
     } catch (error) {
       console.error("Erro ao carregar dados:", error)
     } finally {
@@ -440,6 +457,29 @@ export default function AdminPage() {
     }
   }
 
+  async function handleSaveTema() {
+    setTemaSaving(true)
+    try {
+      const res = await fetch("/api/admin/tema", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(tema),
+      })
+
+      if (res.ok) {
+        alert("Tema salvo com sucesso!")
+      } else {
+        const error = await res.json()
+        alert("Erro: " + error.error)
+      }
+    } catch (error) {
+      console.error("Erro ao salvar tema:", error)
+      alert("Erro ao salvar tema")
+    } finally {
+      setTemaSaving(false)
+    }
+  }
+
   function toggleCategoria(catId: string) {
     setProdutoForm(prev => ({
       ...prev,
@@ -538,6 +578,10 @@ export default function AdminPage() {
             <TabsTrigger value="feedbacks" className="gap-2">
               <MessageSquare className="h-4 w-4" />
               Feedbacks
+            </TabsTrigger>
+            <TabsTrigger value="tema" className="gap-2">
+              <Palette className="h-4 w-4" />
+              Tema
             </TabsTrigger>
           </TabsList>
 
@@ -798,6 +842,120 @@ export default function AdminPage() {
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tema Tab */}
+          <TabsContent value="tema">
+            <Card>
+              <CardHeader>
+                <CardTitle>Configurações de Tema</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="cor-primaria">Cor Primária</Label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        id="cor-primaria"
+                        value={tema.cor_primaria}
+                        onChange={(e) => setTema({ ...tema, cor_primaria: e.target.value })}
+                        className="h-10 w-16 cursor-pointer rounded border"
+                      />
+                      <Input
+                        value={tema.cor_primaria}
+                        onChange={(e) => setTema({ ...tema, cor_primaria: e.target.value })}
+                        placeholder="#000000"
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cor-fundo">Cor de Fundo</Label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        id="cor-fundo"
+                        value={tema.cor_fundo}
+                        onChange={(e) => setTema({ ...tema, cor_fundo: e.target.value })}
+                        className="h-10 w-16 cursor-pointer rounded border"
+                      />
+                      <Input
+                        value={tema.cor_fundo}
+                        onChange={(e) => setTema({ ...tema, cor_fundo: e.target.value })}
+                        placeholder="#FFFFFF"
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="fonte">Fonte Padrão</Label>
+                    <Select
+                      value={tema.fonte_padrao}
+                      onValueChange={(value) => setTema({ ...tema, fonte_padrao: value })}
+                    >
+                      <SelectTrigger id="fonte">
+                        <SelectValue placeholder="Selecione uma fonte" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Inter">Inter</SelectItem>
+                        <SelectItem value="DM Sans">DM Sans</SelectItem>
+                        <SelectItem value="Roboto">Roboto</SelectItem>
+                        <SelectItem value="Open Sans">Open Sans</SelectItem>
+                        <SelectItem value="Poppins">Poppins</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="layout">Layout de Produtos</Label>
+                    <Select
+                      value={tema.layout_produtos}
+                      onValueChange={(value) => setTema({ ...tema, layout_produtos: value })}
+                    >
+                      <SelectTrigger id="layout">
+                        <SelectValue placeholder="Selecione um layout" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="grid">Grade (Grid)</SelectItem>
+                        <SelectItem value="list">Lista</SelectItem>
+                        <SelectItem value="carousel">Carrossel</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-4">
+                  <Button onClick={handleSaveTema} disabled={temaSaving}>
+                    {temaSaving ? "Salvando..." : "Salvar Configurações"}
+                  </Button>
+                </div>
+
+                {/* Preview */}
+                <div className="rounded-lg border p-4">
+                  <h4 className="mb-3 text-sm font-medium">Pré-visualização</h4>
+                  <div
+                    className="rounded-lg p-4"
+                    style={{ backgroundColor: tema.cor_fundo }}
+                  >
+                    <div
+                      className="inline-block rounded px-4 py-2 text-white"
+                      style={{ backgroundColor: tema.cor_primaria, fontFamily: tema.fonte_padrao }}
+                    >
+                      Botão de Exemplo
+                    </div>
+                    <p
+                      className="mt-2 text-sm"
+                      style={{ fontFamily: tema.fonte_padrao }}
+                    >
+                      Texto de exemplo com a fonte {tema.fonte_padrao}
+                    </p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
