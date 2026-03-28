@@ -29,28 +29,40 @@ const iconMap: Record<string, React.ReactNode> = {
 
 export function SocialSidebar() {
   const [redes, setRedes] = useState<RedeSocial[]>([])
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(true)
 
   useEffect(() => {
+    console.log("[v0] SocialSidebar: Buscando redes sociais...")
     fetch("/api/redes-sociais?posicao=lateral")
       .then((res) => res.json())
       .then((data) => {
+        console.log("[v0] Redes sociais recebidas:", data)
         if (Array.isArray(data)) {
           setRedes(data)
         }
       })
-      .catch(() => {})
+      .catch((err) => console.error("[v0] Erro ao buscar redes:", err))
 
-    // Mostrar barra após scroll
+    // Mostrar barra após scroll (pequeno delay inicial)
     const handleScroll = () => {
-      setIsVisible(window.scrollY > 300)
+      setIsVisible(window.scrollY > 100)
     }
 
+    // Inicialmente visível após 1 segundo
+    const timer = setTimeout(() => setIsVisible(true), 1000)
+    
     window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      clearTimeout(timer)
+    }
   }, [])
 
-  if (redes.length === 0) return null
+  // Não renderizar se não houver redes cadastradas
+  if (redes.length === 0) {
+    console.log("[v0] SocialSidebar: Nenhuma rede social encontrada")
+    return null
+  }
 
   return (
     <div
