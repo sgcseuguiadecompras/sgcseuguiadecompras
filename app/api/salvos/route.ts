@@ -12,14 +12,12 @@ export async function GET(request: Request) {
 
   const supabase = await createClient()
 
-  // Primeiro buscar os salvos sem join para debug
+  // Buscar os salvos do usuario
   const { data: salvosData, error: salvosError } = await supabase
     .from("salvos")
     .select("*")
     .eq("usuario_id", usuarioId)
     .order("data_salvo", { ascending: false })
-
-  console.log("[v0] Salvos encontrados:", salvosData?.length, "para usuario:", usuarioId)
 
   if (salvosError) {
     console.error("[v0] Erro ao buscar salvos:", salvosError)
@@ -30,16 +28,17 @@ export async function GET(request: Request) {
     return NextResponse.json([])
   }
 
-  // Buscar detalhes dos produtos
+  // Buscar detalhes dos produtos (usando apenas colunas existentes)
   const produtoIds = salvosData.map(s => s.produto_id).filter(Boolean)
   
   const { data: produtosData, error: produtosError } = await supabase
     .from("produtos")
-    .select("id, nome, descricao, preco, preco_original, imagem_url, link_afiliado, lojas(id, nome, icone)")
+    .select("id, nome, descricao, preco, avaliacao, imagem, link_afiliado, lojas(id, nome, icone)")
     .in("id", produtoIds)
 
   if (produtosError) {
     console.error("[v0] Erro ao buscar produtos:", produtosError)
+    return NextResponse.json({ error: produtosError.message }, { status: 500 })
   }
 
   // Combinar os dados

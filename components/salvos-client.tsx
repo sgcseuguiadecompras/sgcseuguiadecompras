@@ -50,9 +50,9 @@ export function SalvosClient() {
           >
             {/* Image */}
             <div className="relative aspect-square overflow-hidden bg-secondary">
-              {produto.imagem_url ? (
+              {produto.imagem && produto.imagem.length > 0 ? (
                 <img
-                  src={produto.imagem_url}
+                  src={produto.imagem[0]}
                   alt={produto.nome}
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
@@ -89,15 +89,16 @@ export function SalvosClient() {
                 </p>
               )}
 
-              {/* Price */}
-              <div className="mt-3 flex items-end gap-2">
+              {/* Price and Rating */}
+              <div className="mt-3 flex items-center justify-between">
                 <span className="text-lg font-bold text-foreground">
                   R$ {(produto.preco || 0).toFixed(2).replace(".", ",")}
                 </span>
-                {produto.preco_original && produto.preco_original > produto.preco && (
-                  <span className="text-xs text-muted-foreground line-through">
-                    R$ {produto.preco_original.toFixed(2).replace(".", ",")}
-                  </span>
+                {produto.avaliacao && (
+                  <div className="flex items-center gap-1">
+                    <Star className="h-4 w-4 fill-primary text-primary" />
+                    <span className="text-sm text-muted-foreground">{produto.avaliacao}</span>
+                  </div>
                 )}
               </div>
 

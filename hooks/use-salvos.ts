@@ -24,8 +24,8 @@ interface ProdutoSalvo {
     nome: string
     descricao: string
     preco: number
-    preco_original: number | null
-    imagem_url: string
+    avaliacao: number | null
+    imagem: string[] | null
     link_afiliado: string
     lojas: { id: string; nome: string; icone: string | null } | null
   } | null
