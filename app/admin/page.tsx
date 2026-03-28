@@ -31,7 +31,8 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Pencil, Trash2, Plus, LogOut, Package, Tag, Store, Home, Ticket, MessageSquare, Palette } from "lucide-react"
+import { Pencil, Trash2, Plus, LogOut, Package, Tag, Store, Home, Ticket, MessageSquare, Palette, Share2, ChevronUp, ChevronDown } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
 
 interface Loja {
   id: string
@@ -85,6 +86,16 @@ interface Tema {
   layout_produtos: string
 }
 
+interface RedeSocial {
+  id: string
+  nome: string
+  icone: string
+  url: string
+  posicao: string
+  ativo: boolean
+  ordem: number
+}
+
 const emptyProduto = {
   nome: "",
   descricao: "",
@@ -100,6 +111,7 @@ const emptyProduto = {
 const emptyCategoria = { nome: "", icone: "" }
 const emptyLoja = { nome: "", icone: "" }
 const emptyCupom = { codigo: "", descricao: "", validade: "", link: "", loja_id: "" }
+const emptyRedeSocial = { nome: "", icone: "", url: "", posicao: "rodape", ativo: true, ordem: 0 }
 
 export default function AdminPage() {
   const router = useRouter()
@@ -108,6 +120,7 @@ export default function AdminPage() {
   const [cupons, setCupons] = useState<Cupom[]>([])
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([])
+  const [redesSociais, setRedesSociais] = useState<RedeSocial[]>([])
   const [tema, setTema] = useState<Tema>({
     cor_primaria: "#000000",
     cor_fundo: "#FFFFFF",
@@ -123,18 +136,21 @@ export default function AdminPage() {
   const [categoriaDialogOpen, setCategoriaDialogOpen] = useState(false)
   const [lojaDialogOpen, setLojaDialogOpen] = useState(false)
   const [cupomDialogOpen, setCupomDialogOpen] = useState(false)
+  const [redeDialogOpen, setRedeDialogOpen] = useState(false)
   
   // Editing IDs
   const [editingProdutoId, setEditingProdutoId] = useState<string | null>(null)
   const [editingCategoriaId, setEditingCategoriaId] = useState<string | null>(null)
   const [editingLojaId, setEditingLojaId] = useState<string | null>(null)
   const [editingCupomId, setEditingCupomId] = useState<string | null>(null)
+  const [editingRedeId, setEditingRedeId] = useState<string | null>(null)
   
   // Forms
   const [produtoForm, setProdutoForm] = useState(emptyProduto)
   const [categoriaForm, setCategoriaForm] = useState(emptyCategoria)
   const [lojaForm, setLojaForm] = useState(emptyLoja)
   const [cupomForm, setCupomForm] = useState(emptyCupom)
+  const [redeForm, setRedeForm] = useState(emptyRedeSocial)
 
   useEffect(() => {
     loadData()
@@ -142,13 +158,14 @@ export default function AdminPage() {
 
   async function loadData() {
     try {
-      const [produtosRes, lojasRes, cuponsRes, categoriasRes, feedbacksRes, temaRes] = await Promise.all([
+      const [produtosRes, lojasRes, cuponsRes, categoriasRes, feedbacksRes, temaRes, redesRes] = await Promise.all([
         fetch("/api/admin/produtos"),
         fetch("/api/admin/lojas"),
         fetch("/api/admin/cupons"),
         fetch("/api/admin/categorias"),
         fetch("/api/feedbacks"),
         fetch("/api/admin/tema"),
+        fetch("/api/admin/redes-sociais"),
       ])
 
       if (produtosRes.status === 401) {
@@ -156,13 +173,14 @@ export default function AdminPage() {
         return
       }
 
-      const [produtosData, lojasData, cuponsData, categoriasData, feedbacksData, temaData] = await Promise.all([
+      const [produtosData, lojasData, cuponsData, categoriasData, feedbacksData, temaData, redesData] = await Promise.all([
         produtosRes.json(),
         lojasRes.json(),
         cuponsRes.json(),
         categoriasRes.json(),
         feedbacksRes.json(),
         temaRes.json(),
+        redesRes.json(),
       ])
 
       setProdutos(produtosData)
@@ -171,6 +189,7 @@ export default function AdminPage() {
       setCategorias(categoriasData)
       setFeedbacks(Array.isArray(feedbacksData) ? feedbacksData : [])
       if (temaData) setTema(temaData)
+      setRedesSociais(Array.isArray(redesData) ? redesData : [])
     } catch (error) {
       console.error("Erro ao carregar dados:", error)
     } finally {
@@ -480,6 +499,106 @@ export default function AdminPage() {
     }
   }
 
+  // Rede Social handlers
+  function openNewRedeDialog() {
+    setEditingRedeId(null)
+    setRedeForm(emptyRedeSocial)
+    setRedeDialogOpen(true)
+  }
+
+  function openEditRedeDialog(rede: RedeSocial) {
+    setEditingRedeId(rede.id)
+    setRedeForm({
+      nome: rede.nome,
+      icone: rede.icone,
+      url: rede.url,
+      posicao: rede.posicao,
+      ativo: rede.ativo,
+      ordem: rede.ordem,
+    })
+    setRedeDialogOpen(true)
+  }
+
+  async function handleSaveRede() {
+    setSaving(true)
+    try {
+      const url = editingRedeId
+        ? `/api/admin/redes-sociais/${editingRedeId}`
+        : "/api/admin/redes-sociais"
+      const method = editingRedeId ? "PUT" : "POST"
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(redeForm),
+      })
+
+      if (res.ok) {
+        setRedeDialogOpen(false)
+        loadData()
+      } else {
+        const error = await res.json()
+        alert("Erro: " + error.error)
+      }
+    } catch (error) {
+      console.error("Erro ao salvar:", error)
+      alert("Erro ao salvar rede social")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleDeleteRede(id: string) {
+    if (!confirm("Tem certeza que deseja excluir esta rede social?")) return
+
+    try {
+      const res = await fetch(`/api/admin/redes-sociais/${id}`, { method: "DELETE" })
+      if (res.ok) {
+        loadData()
+      } else {
+        const error = await res.json()
+        alert("Erro: " + error.error)
+      }
+    } catch (error) {
+      console.error("Erro ao excluir:", error)
+      alert("Erro ao excluir rede social")
+    }
+  }
+
+  async function moveRede(id: string, direction: "up" | "down") {
+    const index = redesSociais.findIndex(r => r.id === id)
+    if (index === -1) return
+    if (direction === "up" && index === 0) return
+    if (direction === "down" && index === redesSociais.length - 1) return
+
+    const newOrder = [...redesSociais]
+    const swapIndex = direction === "up" ? index - 1 : index + 1
+    
+    // Swap orders
+    const tempOrdem = newOrder[index].ordem
+    newOrder[index].ordem = newOrder[swapIndex].ordem
+    newOrder[swapIndex].ordem = tempOrdem
+
+    // Update both items
+    try {
+      await Promise.all([
+        fetch(`/api/admin/redes-sociais/${newOrder[index].id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newOrder[index]),
+        }),
+        fetch(`/api/admin/redes-sociais/${newOrder[swapIndex].id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newOrder[swapIndex]),
+        }),
+      ])
+      loadData()
+    } catch (error) {
+      console.error("Erro ao reordenar:", error)
+    }
+  }
+
   function toggleCategoria(catId: string) {
     setProdutoForm(prev => ({
       ...prev,
@@ -582,6 +701,10 @@ export default function AdminPage() {
             <TabsTrigger value="tema" className="gap-2">
               <Palette className="h-4 w-4" />
               Tema
+            </TabsTrigger>
+            <TabsTrigger value="redes" className="gap-2">
+              <Share2 className="h-4 w-4" />
+              Redes Sociais
             </TabsTrigger>
           </TabsList>
 
@@ -959,6 +1082,97 @@ export default function AdminPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Redes Sociais Tab */}
+          <TabsContent value="redes">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Redes Sociais ({redesSociais.length})</CardTitle>
+                <Button onClick={openNewRedeDialog} size="sm" className="gap-1">
+                  <Plus className="h-4 w-4" />
+                  Adicionar
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {redesSociais.length === 0 ? (
+                  <p className="py-8 text-center text-muted-foreground">
+                    Nenhuma rede social cadastrada.
+                  </p>
+                ) : (
+                  <div className="max-h-[400px] overflow-y-auto">
+                    <Table>
+                      <TableHeader className="sticky top-0 bg-background z-10">
+                        <TableRow>
+                          <TableHead>Ordem</TableHead>
+                          <TableHead>Nome</TableHead>
+                          <TableHead>Icone</TableHead>
+                          <TableHead>Posicao</TableHead>
+                          <TableHead>Ativo</TableHead>
+                          <TableHead className="text-right">Acoes</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {redesSociais.map((rede, index) => (
+                          <TableRow key={rede.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => moveRede(rede.id, "up")}
+                                  disabled={index === 0}
+                                >
+                                  <ChevronUp className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => moveRede(rede.id, "down")}
+                                  disabled={index === redesSociais.length - 1}
+                                >
+                                  <ChevronDown className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-medium">{rede.nome}</TableCell>
+                            <TableCell>
+                              {rede.icone?.startsWith("http") ? (
+                                <img src={rede.icone} alt={rede.nome} className="h-6 w-6" />
+                              ) : (
+                                <span className="text-sm text-muted-foreground">{rede.icone}</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <span className="rounded bg-muted px-2 py-1 text-xs capitalize">
+                                {rede.posicao}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <span className={`rounded px-2 py-1 text-xs ${rede.ativo ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                                {rede.ativo ? "Sim" : "Nao"}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-1">
+                                <Button variant="ghost" size="icon" onClick={() => openEditRedeDialog(rede)}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleDeleteRede(rede.id)}>
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
 
         {/* Produto Dialog */}
@@ -1281,6 +1495,78 @@ export default function AdminPage() {
                   Cancelar
                 </Button>
                 <Button onClick={handleSaveCupom} disabled={saving}>
+                  {saving ? "Salvando..." : "Salvar"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Rede Social Dialog */}
+        <Dialog open={redeDialogOpen} onOpenChange={setRedeDialogOpen}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>
+                {editingRedeId ? "Editar Rede Social" : "Nova Rede Social"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="rede-nome">Nome</Label>
+                <Input
+                  id="rede-nome"
+                  value={redeForm.nome}
+                  onChange={(e) => setRedeForm({ ...redeForm, nome: e.target.value })}
+                  placeholder="Instagram"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="rede-icone">Icone (URL ou classe CSS)</Label>
+                <Input
+                  id="rede-icone"
+                  value={redeForm.icone}
+                  onChange={(e) => setRedeForm({ ...redeForm, icone: e.target.value })}
+                  placeholder="https://... ou lucide:instagram"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="rede-url">URL</Label>
+                <Input
+                  id="rede-url"
+                  value={redeForm.url}
+                  onChange={(e) => setRedeForm({ ...redeForm, url: e.target.value })}
+                  placeholder="https://instagram.com/..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="rede-posicao">Posicao</Label>
+                <Select
+                  value={redeForm.posicao}
+                  onValueChange={(value) => setRedeForm({ ...redeForm, posicao: value })}
+                >
+                  <SelectTrigger id="rede-posicao">
+                    <SelectValue placeholder="Selecione a posicao" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="rodape">Rodape</SelectItem>
+                    <SelectItem value="lateral">Lateral</SelectItem>
+                    <SelectItem value="ambos">Ambos</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="rede-ativo"
+                  checked={redeForm.ativo}
+                  onCheckedChange={(checked) => setRedeForm({ ...redeForm, ativo: checked })}
+                />
+                <Label htmlFor="rede-ativo">Ativo</Label>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setRedeDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleSaveRede} disabled={saving}>
                   {saving ? "Salvando..." : "Salvar"}
                 </Button>
               </div>
