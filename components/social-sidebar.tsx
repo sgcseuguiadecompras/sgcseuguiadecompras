@@ -32,16 +32,14 @@ export function SocialSidebar() {
   const [isVisible, setIsVisible] = useState(true)
 
   useEffect(() => {
-    console.log("[v0] SocialSidebar: Buscando redes sociais...")
     fetch("/api/redes-sociais?posicao=lateral")
       .then((res) => res.json())
       .then((data) => {
-        console.log("[v0] Redes sociais recebidas:", data)
         if (Array.isArray(data)) {
           setRedes(data)
         }
       })
-      .catch((err) => console.error("[v0] Erro ao buscar redes:", err))
+      .catch(() => {})
 
     // Mostrar barra após scroll (pequeno delay inicial)
     const handleScroll = () => {
@@ -60,7 +58,6 @@ export function SocialSidebar() {
 
   // Não renderizar se não houver redes cadastradas
   if (redes.length === 0) {
-    console.log("[v0] SocialSidebar: Nenhuma rede social encontrada")
     return null
   }
 
@@ -72,8 +69,24 @@ export function SocialSidebar() {
     >
       <div className="flex flex-col gap-2 rounded-full bg-card/90 p-2 shadow-lg backdrop-blur-sm border border-border">
         {redes.map((rede) => {
-          const iconKey = rede.icone?.toLowerCase() || rede.nome?.toLowerCase() || ""
-          const icon = iconMap[iconKey] || <MessageCircle className="h-5 w-5" />
+          // Renderizar ícone baseado no tipo
+          const renderIcon = () => {
+            const icone = rede.icone || ""
+            
+            // Font Awesome (fab fa-*, fas fa-*, far fa-*)
+            if (icone.startsWith("fa") && icone.includes(" fa-")) {
+              return <i className={`${icone} text-lg`} />
+            }
+            
+            // URL de imagem
+            if (icone.startsWith("http")) {
+              return <img src={icone} alt={rede.nome} className="h-5 w-5 object-contain" />
+            }
+            
+            // Fallback para mapeamento de ícones Lucide
+            const iconKey = icone.toLowerCase() || rede.nome?.toLowerCase() || ""
+            return iconMap[iconKey] || <MessageCircle className="h-5 w-5" />
+          }
 
           return (
             <a
@@ -84,7 +97,7 @@ export function SocialSidebar() {
               className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
               title={rede.nome}
             >
-              {icon}
+              {renderIcon()}
             </a>
           )
         })}

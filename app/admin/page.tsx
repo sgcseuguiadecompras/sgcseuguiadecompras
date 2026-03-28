@@ -1521,13 +1521,16 @@ export default function AdminPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="rede-icone">Icone (URL ou classe CSS)</Label>
+                <Label htmlFor="rede-icone">Icone (Font Awesome ou URL)</Label>
                 <Input
                   id="rede-icone"
                   value={redeForm.icone}
                   onChange={(e) => setRedeForm({ ...redeForm, icone: e.target.value })}
-                  placeholder="https://... ou lucide:instagram"
+                  placeholder="fab fa-instagram"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Exemplos: fab fa-instagram, fab fa-facebook, fab fa-whatsapp, fab fa-youtube, fab fa-tiktok
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="rede-url">URL</Label>
