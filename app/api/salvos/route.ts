@@ -12,33 +12,43 @@ export async function GET(request: Request) {
 
   const supabase = await createClient()
 
-  const { data, error } = await supabase
+  // Primeiro buscar os salvos sem join para debug
+  const { data: salvosData, error: salvosError } = await supabase
     .from("salvos")
-    .select(`
-      id,
-      produto_id,
-      loja_id,
-      data_salvo,
-      produtos (
-        id,
-        nome,
-        descricao,
-        preco,
-        preco_original,
-        imagem_url,
-        link_afiliado,
-        lojas (id, nome, icone)
-      )
-    `)
+    .select("*")
     .eq("usuario_id", usuarioId)
     .order("data_salvo", { ascending: false })
 
-  if (error) {
-    console.error("[v0] Erro ao buscar salvos:", error)
-    return NextResponse.json({ error: "Erro ao buscar salvos" }, { status: 500 })
+  console.log("[v0] Salvos encontrados:", salvosData?.length, "para usuario:", usuarioId)
+
+  if (salvosError) {
+    console.error("[v0] Erro ao buscar salvos:", salvosError)
+    return NextResponse.json({ error: salvosError.message }, { status: 500 })
   }
 
-  return NextResponse.json(data || [])
+  if (!salvosData || salvosData.length === 0) {
+    return NextResponse.json([])
+  }
+
+  // Buscar detalhes dos produtos
+  const produtoIds = salvosData.map(s => s.produto_id).filter(Boolean)
+  
+  const { data: produtosData, error: produtosError } = await supabase
+    .from("produtos")
+    .select("id, nome, descricao, preco, preco_original, imagem_url, link_afiliado, lojas(id, nome, icone)")
+    .in("id", produtoIds)
+
+  if (produtosError) {
+    console.error("[v0] Erro ao buscar produtos:", produtosError)
+  }
+
+  // Combinar os dados
+  const result = salvosData.map(salvo => ({
+    ...salvo,
+    produtos: produtosData?.find(p => p.id === salvo.produto_id) || null
+  }))
+
+  return NextResponse.json(result)
 }
 
 // POST - Salvar produto
