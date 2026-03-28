@@ -557,9 +557,9 @@ export default function AdminPage() {
                     Nenhum produto cadastrado.
                   </p>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div className="max-h-[500px] overflow-y-auto overflow-x-auto">
                     <Table>
-                      <TableHeader>
+                      <TableHeader className="sticky top-0 bg-background z-10">
                         <TableRow>
                           <TableHead>Nome</TableHead>
                           <TableHead>Preco</TableHead>
@@ -613,9 +613,9 @@ export default function AdminPage() {
                     Nenhuma categoria cadastrada.
                   </p>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div className="max-h-[400px] overflow-y-auto overflow-x-auto">
                     <Table>
-                      <TableHeader>
+                      <TableHeader className="sticky top-0 bg-background z-10">
                         <TableRow>
                           <TableHead>Nome</TableHead>
                           <TableHead>Slug</TableHead>
@@ -663,9 +663,9 @@ export default function AdminPage() {
                     Nenhuma loja cadastrada.
                   </p>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div className="max-h-[400px] overflow-y-auto overflow-x-auto">
                     <Table>
-                      <TableHeader>
+                      <TableHeader className="sticky top-0 bg-background z-10">
                         <TableRow>
                           <TableHead>Nome</TableHead>
                           <TableHead>Icone</TableHead>
@@ -717,9 +717,9 @@ export default function AdminPage() {
                     Nenhum cupom cadastrado.
                   </p>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div className="max-h-[400px] overflow-y-auto overflow-x-auto">
                     <Table>
-                      <TableHeader>
+                      <TableHeader className="sticky top-0 bg-background z-10">
                         <TableRow>
                           <TableHead>Codigo</TableHead>
                           <TableHead>Descricao</TableHead>

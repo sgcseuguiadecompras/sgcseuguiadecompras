@@ -116,12 +116,13 @@ export function ProductCard({ product }: ProductCardProps) {
             size="sm"
             className="flex-1 gap-1"
             variant="default"
-            asChild
+            onClick={(e) => {
+              handleOfferClick()
+              window.open(affiliateLink, "_blank", "noopener,noreferrer")
+            }}
           >
-            <a href={affiliateLink} target="_blank" rel="noopener noreferrer" onClick={handleOfferClick}>
-              Ver Oferta
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+            Ver Oferta
+            <ExternalLink className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>

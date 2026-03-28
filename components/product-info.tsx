@@ -105,11 +105,16 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
       {/* CTA - abre link de afiliado em nova aba */}
       <div className="mt-6 flex flex-col gap-3">
-        <Button asChild size="lg" className="w-full gap-2 text-base">
-          <a href={affiliateLink} target="_blank" rel="noopener noreferrer" onClick={handleOfferClick}>
-            <ShieldCheck className="h-5 w-5" />
-            Ver Oferta Verificada
-          </a>
+        <Button 
+          size="lg" 
+          className="w-full gap-2 text-base"
+          onClick={() => {
+            handleOfferClick()
+            window.open(affiliateLink, "_blank", "noopener,noreferrer")
+          }}
+        >
+          <ShieldCheck className="h-5 w-5" />
+          Ver Oferta Verificada
         </Button>
         <p className="text-center text-xs text-muted-foreground">
           Você será redirecionado para a loja parceira de forma segura.
