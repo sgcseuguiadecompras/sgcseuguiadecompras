@@ -9,16 +9,19 @@ export async function POST(request: Request) {
     const { produto_id, cupom_id } = body
 
     // Registrar clique
-    const { error: clickError } = await supabase
+    const { data: clickData, error: clickError } = await supabase
       .from("cliques")
       .insert({
         produto_id: produto_id || null,
-        data: new Date().toISOString(),
       })
+      .select()
 
     if (clickError) {
       console.error("[v0] Erro ao registrar clique:", clickError)
+      return NextResponse.json({ error: clickError.message }, { status: 500 })
     }
+    
+    console.log("[v0] Clique registrado:", clickData)
 
     // Se houver produto e cupom, calcular economia
     if (produto_id && cupom_id) {

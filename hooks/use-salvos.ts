@@ -22,7 +22,6 @@ interface ProdutoSalvo {
   produtos: {
     id: string
     nome: string
-    slug: string
     descricao: string
     preco: number
     preco_original: number | null

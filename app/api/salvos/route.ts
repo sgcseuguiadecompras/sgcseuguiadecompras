@@ -22,7 +22,6 @@ export async function GET(request: Request) {
       produtos (
         id,
         nome,
-        slug,
         descricao,
         preco,
         preco_original,

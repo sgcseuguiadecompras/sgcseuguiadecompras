@@ -103,11 +103,6 @@ export function SalvosClient() {
 
               {/* Actions */}
               <div className="mt-4 flex gap-2">
-                <Button size="sm" variant="outline" className="flex-1" asChild>
-                  <Link href={`/produto/${produto.slug}`}>
-                    Ver Detalhes
-                  </Link>
-                </Button>
                 {produto.link_afiliado && (
                   <Button size="sm" className="flex-1 gap-1" asChild>
                     <a href={produto.link_afiliado} target="_blank" rel="noopener noreferrer">
