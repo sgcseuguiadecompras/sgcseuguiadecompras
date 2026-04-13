@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Pencil, Trash2, Plus, LogOut, Package, Tag, Store, Home, Ticket, MessageSquare, Palette, Share2, ChevronUp, ChevronDown } from "lucide-react"
+import { Pencil, Trash2, Plus, LogOut, Package, Tag, Store, Home, Ticket, MessageSquare, Palette, Share2, ChevronUp, ChevronDown, Star, Check, X } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 
 interface Loja {
@@ -113,6 +113,18 @@ interface RedeSocial {
   ordem: number
 }
 
+interface Avaliacao {
+  id: string
+  produto_id: string
+  nome_usuario: string
+  email_usuario: string | null
+  nota: number
+  comentario: string | null
+  aprovado: boolean
+  created_at: string
+  produtos?: { id: string; nome: string }
+}
+
 const emptyProduto = {
   nome: "",
   descricao: "",
@@ -139,6 +151,7 @@ export default function AdminPage() {
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([])
   const [redesSociais, setRedesSociais] = useState<RedeSocial[]>([])
+  const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([])
   const [tema, setTema] = useState<Tema>({
     cor_primaria: "#000000",
     cor_secundaria: "#6B7280",
@@ -192,7 +205,7 @@ export default function AdminPage() {
 
   async function loadData() {
     try {
-      const [produtosRes, lojasRes, cuponsRes, categoriasRes, feedbacksRes, temaRes, redesRes] = await Promise.all([
+      const [produtosRes, lojasRes, cuponsRes, categoriasRes, feedbacksRes, temaRes, redesRes, avaliacoesRes] = await Promise.all([
         fetch("/api/admin/produtos"),
         fetch("/api/admin/lojas"),
         fetch("/api/admin/cupons"),
@@ -200,6 +213,7 @@ export default function AdminPage() {
         fetch("/api/feedbacks"),
         fetch("/api/admin/tema"),
         fetch("/api/admin/redes-sociais"),
+        fetch("/api/admin/avaliacoes"),
       ])
 
       if (produtosRes.status === 401) {
@@ -207,7 +221,7 @@ export default function AdminPage() {
         return
       }
 
-      const [produtosData, lojasData, cuponsData, categoriasData, feedbacksData, temaData, redesData] = await Promise.all([
+      const [produtosData, lojasData, cuponsData, categoriasData, feedbacksData, temaData, redesData, avaliacoesData] = await Promise.all([
         produtosRes.json(),
         lojasRes.json(),
         cuponsRes.json(),
@@ -215,6 +229,7 @@ export default function AdminPage() {
         feedbacksRes.json(),
         temaRes.json(),
         redesRes.json(),
+        avaliacoesRes.json(),
       ])
 
       setProdutos(produtosData)
@@ -224,6 +239,7 @@ export default function AdminPage() {
       setFeedbacks(Array.isArray(feedbacksData) ? feedbacksData : [])
       if (temaData) setTema(temaData)
       setRedesSociais(Array.isArray(redesData) ? redesData : [])
+      setAvaliacoes(Array.isArray(avaliacoesData) ? avaliacoesData : [])
     } catch (error) {
       console.error("Erro ao carregar dados:", error)
     } finally {
@@ -635,6 +651,34 @@ export default function AdminPage() {
     }
   }
 
+  // Avaliacao handlers
+  async function handleAprovarAvaliacao(id: string, aprovado: boolean) {
+    try {
+      const res = await fetch(`/api/admin/avaliacoes/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ aprovado }),
+      })
+      if (res.ok) {
+        loadData()
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar avaliacao:", error)
+    }
+  }
+
+  async function handleDeleteAvaliacao(id: string) {
+    if (!confirm("Tem certeza que deseja excluir esta avaliacao?")) return
+    try {
+      const res = await fetch(`/api/admin/avaliacoes/${id}`, { method: "DELETE" })
+      if (res.ok) {
+        loadData()
+      }
+    } catch (error) {
+      console.error("Erro ao excluir avaliacao:", error)
+    }
+  }
+
   function toggleCategoria(catId: string) {
     setProdutoForm(prev => ({
       ...prev,
@@ -741,6 +785,10 @@ export default function AdminPage() {
             <TabsTrigger value="redes" className="gap-2">
               <Share2 className="h-4 w-4" />
               Redes Sociais
+            </TabsTrigger>
+            <TabsTrigger value="avaliacoes" className="gap-2">
+              <Star className="h-4 w-4" />
+              Avaliacoes
             </TabsTrigger>
           </TabsList>
 
@@ -1293,6 +1341,88 @@ export default function AdminPage() {
                         ))}
                       </TableBody>
                     </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Avaliacoes Tab */}
+          <TabsContent value="avaliacoes">
+            <Card>
+              <CardHeader>
+                <CardTitle>Moderacao de Avaliacoes ({avaliacoes.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {avaliacoes.length === 0 ? (
+                  <p className="py-8 text-center text-muted-foreground">
+                    Nenhuma avaliacao para moderar.
+                  </p>
+                ) : (
+                  <div className="max-h-[500px] overflow-y-auto space-y-4">
+                    {avaliacoes.map((avaliacao) => (
+                      <div key={avaliacao.id} className={`rounded-lg border p-4 ${avaliacao.aprovado ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{avaliacao.nome_usuario}</span>
+                              <div className="flex gap-0.5">
+                                {[1, 2, 3, 4, 5].map((n) => (
+                                  <Star key={n} className={`h-4 w-4 ${n <= avaliacao.nota ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
+                                ))}
+                              </div>
+                              <span className={`text-xs px-2 py-0.5 rounded ${avaliacao.aprovado ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                {avaliacao.aprovado ? 'Aprovada' : 'Pendente'}
+                              </span>
+                            </div>
+                            {avaliacao.produtos && (
+                              <p className="mt-1 text-sm text-muted-foreground">
+                                Produto: {avaliacao.produtos.nome}
+                              </p>
+                            )}
+                            {avaliacao.comentario && (
+                              <p className="mt-2 text-sm">{avaliacao.comentario}</p>
+                            )}
+                            <p className="mt-2 text-xs text-muted-foreground">
+                              {new Date(avaliacao.created_at).toLocaleDateString('pt-BR')} - {avaliacao.email_usuario || 'Sem email'}
+                            </p>
+                          </div>
+                          <div className="flex gap-1">
+                            {!avaliacao.aprovado && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-green-600 hover:bg-green-100"
+                                onClick={() => handleAprovarAvaliacao(avaliacao.id, true)}
+                                title="Aprovar"
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {avaliacao.aprovado && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-yellow-600 hover:bg-yellow-100"
+                                onClick={() => handleAprovarAvaliacao(avaliacao.id, false)}
+                                title="Desaprovar"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                              onClick={() => handleDeleteAvaliacao(avaliacao.id)}
+                              title="Excluir"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </CardContent>
