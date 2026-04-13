@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { createClient } from "@supabase/supabase-js"
+
+// Cliente público sem autenticação
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient(supabaseUrl, supabaseAnonKey)
     const body = await request.json()
     
     const { produto_id, cupom_id } = body

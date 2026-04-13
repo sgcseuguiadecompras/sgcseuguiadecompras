@@ -15,7 +15,6 @@ export function ProductCard({ product }: ProductCardProps) {
   const affiliateLink = product.activeLink?.url || "#"
 
   const handleOfferClick = () => {
-    console.log("[v0] Registrando clique para produto:", product.id)
     // Registrar clique no banco
     fetch("/api/cliques", {
       method: "POST",
@@ -24,13 +23,7 @@ export function ProductCard({ product }: ProductCardProps) {
         produto_id: product.id,
         cupom_id: product.activeCoupon?.id || null,
       }),
-    })
-      .then((res) => {
-        console.log("[v0] Clique registrado, status:", res.status)
-        return res.json()
-      })
-      .then((data) => console.log("[v0] Resposta clique:", data))
-      .catch((err) => console.error("[v0] Erro ao registrar clique:", err))
+    }).catch(() => {})
   }
   
   // Obter a primeira imagem (compativel com string ou array)
