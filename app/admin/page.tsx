@@ -82,9 +82,25 @@ interface Feedback {
 
 interface Tema {
   cor_primaria: string
+  cor_secundaria: string
+  cor_destaque: string
   cor_fundo: string
+  cor_texto: string
+  cor_texto_secundario: string
   fonte_padrao: string
   layout_produtos: string
+  border_radius: string
+  espacamento: string
+  sombras: boolean
+  animacoes: boolean
+  modo_escuro: boolean
+  logo_url: string
+  favicon_url: string
+  banner_url: string
+  meta_titulo: string
+  meta_descricao: string
+  google_analytics_id: string
+  facebook_pixel_id: string
 }
 
 interface RedeSocial {
@@ -125,9 +141,25 @@ export default function AdminPage() {
   const [redesSociais, setRedesSociais] = useState<RedeSocial[]>([])
   const [tema, setTema] = useState<Tema>({
     cor_primaria: "#000000",
+    cor_secundaria: "#6B7280",
+    cor_destaque: "#10B981",
     cor_fundo: "#FFFFFF",
+    cor_texto: "#111827",
+    cor_texto_secundario: "#6B7280",
     fonte_padrao: "Inter",
     layout_produtos: "grid",
+    border_radius: "0.5rem",
+    espacamento: "normal",
+    sombras: true,
+    animacoes: true,
+    modo_escuro: false,
+    logo_url: "",
+    favicon_url: "",
+    banner_url: "",
+    meta_titulo: "SGC - Seu Guia de Compras",
+    meta_descricao: "Compre melhor, pague menos e evite golpes!",
+    google_analytics_id: "",
+    facebook_pixel_id: "",
   })
   const [temaSaving, setTemaSaving] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -977,111 +1009,200 @@ export default function AdminPage() {
           <TabsContent value="tema">
             <Card>
               <CardHeader>
-                <CardTitle>Configurações de Tema</CardTitle>
+                <CardTitle>Configuracoes de Tema</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="cor-primaria">Cor Primária</Label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="color"
-                        id="cor-primaria"
-                        value={tema.cor_primaria}
-                        onChange={(e) => setTema({ ...tema, cor_primaria: e.target.value })}
-                        className="h-10 w-16 cursor-pointer rounded border"
-                      />
-                      <Input
-                        value={tema.cor_primaria}
-                        onChange={(e) => setTema({ ...tema, cor_primaria: e.target.value })}
-                        placeholder="#000000"
-                        className="flex-1"
-                      />
+              <CardContent className="max-h-[600px] overflow-y-auto space-y-8">
+                {/* Secao: Cores */}
+                <div>
+                  <h3 className="mb-4 text-lg font-semibold border-b pb-2">Cores</h3>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label>Cor Primaria</Label>
+                      <div className="flex items-center gap-2">
+                        <input type="color" value={tema.cor_primaria} onChange={(e) => setTema({ ...tema, cor_primaria: e.target.value })} className="h-10 w-14 cursor-pointer rounded border" />
+                        <Input value={tema.cor_primaria} onChange={(e) => setTema({ ...tema, cor_primaria: e.target.value })} className="flex-1" />
+                      </div>
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cor-fundo">Cor de Fundo</Label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="color"
-                        id="cor-fundo"
-                        value={tema.cor_fundo}
-                        onChange={(e) => setTema({ ...tema, cor_fundo: e.target.value })}
-                        className="h-10 w-16 cursor-pointer rounded border"
-                      />
-                      <Input
-                        value={tema.cor_fundo}
-                        onChange={(e) => setTema({ ...tema, cor_fundo: e.target.value })}
-                        placeholder="#FFFFFF"
-                        className="flex-1"
-                      />
+                    <div className="space-y-2">
+                      <Label>Cor Secundaria</Label>
+                      <div className="flex items-center gap-2">
+                        <input type="color" value={tema.cor_secundaria} onChange={(e) => setTema({ ...tema, cor_secundaria: e.target.value })} className="h-10 w-14 cursor-pointer rounded border" />
+                        <Input value={tema.cor_secundaria} onChange={(e) => setTema({ ...tema, cor_secundaria: e.target.value })} className="flex-1" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Cor Destaque</Label>
+                      <div className="flex items-center gap-2">
+                        <input type="color" value={tema.cor_destaque} onChange={(e) => setTema({ ...tema, cor_destaque: e.target.value })} className="h-10 w-14 cursor-pointer rounded border" />
+                        <Input value={tema.cor_destaque} onChange={(e) => setTema({ ...tema, cor_destaque: e.target.value })} className="flex-1" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Cor de Fundo</Label>
+                      <div className="flex items-center gap-2">
+                        <input type="color" value={tema.cor_fundo} onChange={(e) => setTema({ ...tema, cor_fundo: e.target.value })} className="h-10 w-14 cursor-pointer rounded border" />
+                        <Input value={tema.cor_fundo} onChange={(e) => setTema({ ...tema, cor_fundo: e.target.value })} className="flex-1" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Cor do Texto</Label>
+                      <div className="flex items-center gap-2">
+                        <input type="color" value={tema.cor_texto} onChange={(e) => setTema({ ...tema, cor_texto: e.target.value })} className="h-10 w-14 cursor-pointer rounded border" />
+                        <Input value={tema.cor_texto} onChange={(e) => setTema({ ...tema, cor_texto: e.target.value })} className="flex-1" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Cor Texto Secundario</Label>
+                      <div className="flex items-center gap-2">
+                        <input type="color" value={tema.cor_texto_secundario} onChange={(e) => setTema({ ...tema, cor_texto_secundario: e.target.value })} className="h-10 w-14 cursor-pointer rounded border" />
+                        <Input value={tema.cor_texto_secundario} onChange={(e) => setTema({ ...tema, cor_texto_secundario: e.target.value })} className="flex-1" />
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="fonte">Fonte Padrão</Label>
-                    <Select
-                      value={tema.fonte_padrao}
-                      onValueChange={(value) => setTema({ ...tema, fonte_padrao: value })}
-                    >
-                      <SelectTrigger id="fonte">
-                        <SelectValue placeholder="Selecione uma fonte" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Inter">Inter</SelectItem>
-                        <SelectItem value="DM Sans">DM Sans</SelectItem>
-                        <SelectItem value="Roboto">Roboto</SelectItem>
-                        <SelectItem value="Open Sans">Open Sans</SelectItem>
-                        <SelectItem value="Poppins">Poppins</SelectItem>
-                      </SelectContent>
-                    </Select>
+                {/* Secao: Tipografia e Layout */}
+                <div>
+                  <h3 className="mb-4 text-lg font-semibold border-b pb-2">Tipografia e Layout</h3>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Fonte Padrao</Label>
+                      <Select value={tema.fonte_padrao} onValueChange={(value) => setTema({ ...tema, fonte_padrao: value })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Inter">Inter</SelectItem>
+                          <SelectItem value="DM Sans">DM Sans</SelectItem>
+                          <SelectItem value="Roboto">Roboto</SelectItem>
+                          <SelectItem value="Open Sans">Open Sans</SelectItem>
+                          <SelectItem value="Poppins">Poppins</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Layout de Produtos</Label>
+                      <Select value={tema.layout_produtos} onValueChange={(value) => setTema({ ...tema, layout_produtos: value })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="grid">Grade (Grid)</SelectItem>
+                          <SelectItem value="list">Lista</SelectItem>
+                          <SelectItem value="carousel">Carrossel</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Border Radius</Label>
+                      <Select value={tema.border_radius} onValueChange={(value) => setTema({ ...tema, border_radius: value })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">Sem arredondamento</SelectItem>
+                          <SelectItem value="0.25rem">Pequeno</SelectItem>
+                          <SelectItem value="0.5rem">Medio</SelectItem>
+                          <SelectItem value="1rem">Grande</SelectItem>
+                          <SelectItem value="9999px">Circular</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Espacamento</Label>
+                      <Select value={tema.espacamento} onValueChange={(value) => setTema({ ...tema, espacamento: value })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="compact">Compacto</SelectItem>
+                          <SelectItem value="normal">Normal</SelectItem>
+                          <SelectItem value="relaxed">Relaxado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="layout">Layout de Produtos</Label>
-                    <Select
-                      value={tema.layout_produtos}
-                      onValueChange={(value) => setTema({ ...tema, layout_produtos: value })}
-                    >
-                      <SelectTrigger id="layout">
-                        <SelectValue placeholder="Selecione um layout" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="grid">Grade (Grid)</SelectItem>
-                        <SelectItem value="list">Lista</SelectItem>
-                        <SelectItem value="carousel">Carrossel</SelectItem>
-                      </SelectContent>
-                    </Select>
+                </div>
+
+                {/* Secao: Efeitos */}
+                <div>
+                  <h3 className="mb-4 text-lg font-semibold border-b pb-2">Efeitos</h3>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="flex items-center gap-3">
+                      <Switch checked={tema.sombras} onCheckedChange={(checked) => setTema({ ...tema, sombras: checked })} />
+                      <Label>Sombras</Label>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Switch checked={tema.animacoes} onCheckedChange={(checked) => setTema({ ...tema, animacoes: checked })} />
+                      <Label>Animacoes</Label>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Switch checked={tema.modo_escuro} onCheckedChange={(checked) => setTema({ ...tema, modo_escuro: checked })} />
+                      <Label>Modo Escuro</Label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Secao: Identidade Visual */}
+                <div>
+                  <h3 className="mb-4 text-lg font-semibold border-b pb-2">Identidade Visual</h3>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label>Logo (URL)</Label>
+                      <Input value={tema.logo_url} onChange={(e) => setTema({ ...tema, logo_url: e.target.value })} placeholder="https://..." />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Favicon (URL)</Label>
+                      <Input value={tema.favicon_url} onChange={(e) => setTema({ ...tema, favicon_url: e.target.value })} placeholder="https://..." />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Banner Hero (URL)</Label>
+                      <Input value={tema.banner_url} onChange={(e) => setTema({ ...tema, banner_url: e.target.value })} placeholder="https://..." />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Secao: SEO e Tracking */}
+                <div>
+                  <h3 className="mb-4 text-lg font-semibold border-b pb-2">SEO e Tracking</h3>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Titulo do Site (Meta Title)</Label>
+                      <Input value={tema.meta_titulo} onChange={(e) => setTema({ ...tema, meta_titulo: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Descricao do Site (Meta Description)</Label>
+                      <Input value={tema.meta_descricao} onChange={(e) => setTema({ ...tema, meta_descricao: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Google Analytics ID</Label>
+                      <Input value={tema.google_analytics_id} onChange={(e) => setTema({ ...tema, google_analytics_id: e.target.value })} placeholder="G-XXXXXXXXXX" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Facebook Pixel ID</Label>
+                      <Input value={tema.facebook_pixel_id} onChange={(e) => setTema({ ...tema, facebook_pixel_id: e.target.value })} placeholder="123456789" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preview */}
+                <div className="rounded-lg border p-4">
+                  <h4 className="mb-3 text-sm font-medium">Pre-visualizacao</h4>
+                  <div className="rounded-lg p-4" style={{ backgroundColor: tema.cor_fundo, borderRadius: tema.border_radius }}>
+                    <div className="inline-block rounded px-4 py-2 text-white" style={{ backgroundColor: tema.cor_primaria, fontFamily: tema.fonte_padrao, borderRadius: tema.border_radius }}>
+                      Botao Primario
+                    </div>
+                    <div className="ml-2 inline-block rounded px-4 py-2" style={{ backgroundColor: tema.cor_secundaria, color: "#fff", fontFamily: tema.fonte_padrao, borderRadius: tema.border_radius }}>
+                      Botao Secundario
+                    </div>
+                    <div className="ml-2 inline-block rounded px-4 py-2" style={{ backgroundColor: tema.cor_destaque, color: "#fff", fontFamily: tema.fonte_padrao, borderRadius: tema.border_radius }}>
+                      Destaque
+                    </div>
+                    <p className="mt-3" style={{ color: tema.cor_texto, fontFamily: tema.fonte_padrao }}>
+                      Texto principal com a fonte {tema.fonte_padrao}
+                    </p>
+                    <p className="mt-1 text-sm" style={{ color: tema.cor_texto_secundario, fontFamily: tema.fonte_padrao }}>
+                      Texto secundario para descricoes
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex justify-end pt-4">
                   <Button onClick={handleSaveTema} disabled={temaSaving}>
-                    {temaSaving ? "Salvando..." : "Salvar Configurações"}
+                    {temaSaving ? "Salvando..." : "Salvar Configuracoes"}
                   </Button>
-                </div>
-
-                {/* Preview */}
-                <div className="rounded-lg border p-4">
-                  <h4 className="mb-3 text-sm font-medium">Pré-visualização</h4>
-                  <div
-                    className="rounded-lg p-4"
-                    style={{ backgroundColor: tema.cor_fundo }}
-                  >
-                    <div
-                      className="inline-block rounded px-4 py-2 text-white"
-                      style={{ backgroundColor: tema.cor_primaria, fontFamily: tema.fonte_padrao }}
-                    >
-                      Botão de Exemplo
-                    </div>
-                    <p
-                      className="mt-2 text-sm"
-                      style={{ fontFamily: tema.fonte_padrao }}
-                    >
-                      Texto de exemplo com a fonte {tema.fonte_padrao}
-                    </p>
-                  </div>
                 </div>
               </CardContent>
             </Card>
