@@ -2,6 +2,7 @@ import { HeroSection } from "@/components/hero-section"
 import { CategoryGrid } from "@/components/category-grid"
 import { AllProducts } from "@/components/all-products"
 import { CouponsHighlight } from "@/components/coupons-highlight"
+import { FeedbackSection } from "@/components/feedback-section"
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -27,6 +28,7 @@ export default function HomePage() {
       <CategoryGrid />
       <AllProducts />
       <CouponsHighlight />
+      <FeedbackSection />
     </>
   )
 }

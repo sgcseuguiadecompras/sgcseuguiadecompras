@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { ArrowRight, Shield, Tag, Star } from "lucide-react"
+import { ArrowRight, Shield, Tag, Star, Share2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface Stats {
@@ -71,6 +71,26 @@ export function HeroSection() {
                 Ver Ofertas
                 <ArrowRight className="h-4 w-4" />
               </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              className="gap-2 px-8 text-base"
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({
+                    title: "SGC - Seu Guia de Compras",
+                    text: "Compre melhor, pague menos e evite golpes!",
+                    url: "https://sgcseuguiadecompras.com.br",
+                  })
+                } else {
+                  navigator.clipboard.writeText("https://sgcseuguiadecompras.com.br")
+                  alert("Link copiado!")
+                }
+              }}
+            >
+              <Share2 className="h-4 w-4" />
+              Compartilhar
             </Button>
             <Button asChild variant="outline" size="lg" className="gap-2 px-8 text-base">
               <Link href="/cupons">

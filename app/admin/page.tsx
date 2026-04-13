@@ -780,7 +780,7 @@ export default function AdminPage() {
                     Nenhuma categoria cadastrada.
                   </p>
                 ) : (
-                  <div className="max-h-[400px] overflow-y-auto overflow-x-auto">
+                  <div className="max-h-[500px] overflow-y-auto overflow-x-auto">
                     <Table>
                       <TableHeader className="sticky top-0 bg-background z-10">
                         <TableRow>
@@ -830,7 +830,7 @@ export default function AdminPage() {
                     Nenhuma loja cadastrada.
                   </p>
                 ) : (
-                  <div className="max-h-[400px] overflow-y-auto overflow-x-auto">
+                  <div className="max-h-[500px] overflow-y-auto overflow-x-auto">
                     <Table>
                       <TableHeader className="sticky top-0 bg-background z-10">
                         <TableRow>
@@ -884,7 +884,7 @@ export default function AdminPage() {
                     Nenhum cupom cadastrado.
                   </p>
                 ) : (
-                  <div className="max-h-[400px] overflow-y-auto overflow-x-auto">
+                  <div className="max-h-[500px] overflow-y-auto overflow-x-auto">
                     <Table>
                       <TableHeader className="sticky top-0 bg-background z-10">
                         <TableRow>
