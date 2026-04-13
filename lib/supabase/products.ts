@@ -32,8 +32,10 @@ function mapProdutoToProduct(produto: ProdutoComRelacoes): ProductWithRelations 
     reviewCount: 0,
     clickCount: 0,
     currentPrice: produto.preco,
-    originalPrice: undefined,
-    discount: undefined,
+    originalPrice: produto.preco_original || undefined,
+    discount: produto.preco_original && produto.preco_original > produto.preco 
+      ? Math.round((1 - produto.preco / produto.preco_original) * 100) 
+      : undefined,
     status: 'active',
     isFeatured: true,
     isTopRated: (produto.avaliacao || 0) >= 4.5,

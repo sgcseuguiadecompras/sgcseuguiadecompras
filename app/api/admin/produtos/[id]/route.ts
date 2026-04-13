@@ -26,6 +26,7 @@ export async function PUT(
       descricao: body.descricao,
       imagem: body.imagem,
       preco: body.preco,
+      preco_original: body.preco_original || null,
       avaliacao: body.avaliacao,
       loja_id: body.loja_id || null,
       cupom_id: body.cupom_id || null,

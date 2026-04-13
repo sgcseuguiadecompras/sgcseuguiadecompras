@@ -63,6 +63,7 @@ interface Produto {
   descricao: string
   imagem: string[] | string | null
   preco: number
+  preco_original: number | null
   avaliacao: number
   loja_id: string | null
   cupom_id: string | null
@@ -101,6 +102,7 @@ const emptyProduto = {
   descricao: "",
   imagens: [""] as string[],
   preco: 0,
+  preco_original: 0,
   avaliacao: 0,
   loja_id: "",
   cupom_id: "",
@@ -223,6 +225,7 @@ export default function AdminPage() {
       descricao: produto.descricao || "",
       imagens,
       preco: produto.preco,
+      preco_original: produto.preco_original || 0,
       avaliacao: produto.avaliacao || 0,
       loja_id: produto.loja_id || "",
       cupom_id: produto.cupom_id || "",
@@ -250,6 +253,7 @@ export default function AdminPage() {
           ...produtoForm,
           imagem: imagensFiltradas,
           preco: Number(produtoForm.preco),
+          preco_original: produtoForm.preco_original ? Number(produtoForm.preco_original) : null,
           avaliacao: Number(produtoForm.avaliacao),
           loja_id: produtoForm.loja_id || null,
           cupom_id: produtoForm.cupom_id || null,
@@ -1246,6 +1250,17 @@ export default function AdminPage() {
                     step="0.01"
                     value={produtoForm.preco}
                     onChange={(e) => setProdutoForm({ ...produtoForm, preco: Number(e.target.value) })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="preco_original">Preco Original (De:)</Label>
+                  <Input
+                    id="preco_original"
+                    type="number"
+                    step="0.01"
+                    value={produtoForm.preco_original || ""}
+                    onChange={(e) => setProdutoForm({ ...produtoForm, preco_original: e.target.value ? Number(e.target.value) : 0 })}
+                    placeholder="Deixe vazio se nao houver desconto"
                   />
                 </div>
                 <div className="space-y-2">

@@ -31,6 +31,7 @@ export interface Produto {
   descricao?: string
   imagem?: string[] | string | null  // Agora é um array de strings
   preco: number
+  preco_original?: number | null
   avaliacao?: number
   loja_id?: string
   cupom_id?: string
