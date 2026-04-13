@@ -38,17 +38,31 @@ export function FeedbackSection() {
   }
 
   return (
-    <section className="border-t border-border bg-secondary/30 py-12">
+    <section className="border-t border-border bg-gradient-to-b from-primary/5 to-secondary/30 py-16">
       <div className="mx-auto max-w-3xl px-4 lg:px-8">
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm md:p-8">
+        {/* Titulo destacado */}
+        <div className="mb-8 text-center">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2">
+            <span className="text-2xl">💡</span>
+            <span className="font-semibold text-primary">Sua opiniao importa!</span>
+          </div>
+          <h2 className="text-2xl font-bold text-foreground md:text-3xl">
+            Ajude-nos a melhorar o SGC
+          </h2>
+          <p className="mt-2 text-muted-foreground">
+            Envie sugestoes, criticas ou elogios. Lemos todas as mensagens!
+          </p>
+        </div>
+
+        <div className="rounded-xl border-2 border-primary/20 bg-card p-6 shadow-lg md:p-8">
           <div className="flex items-center gap-3 mb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-              <MessageSquare className="h-5 w-5 text-primary" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+              <MessageSquare className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-foreground">Deixe sua Sugestao</h2>
+              <h3 className="text-lg font-semibold text-foreground">Caixa de Sugestoes</h3>
               <p className="text-sm text-muted-foreground">
-                Ajude-nos a melhorar! Sua opiniao e muito importante.
+                Resposta anonima e segura
               </p>
             </div>
           </div>

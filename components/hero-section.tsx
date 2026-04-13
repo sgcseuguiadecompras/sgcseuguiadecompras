@@ -19,11 +19,24 @@ export function HeroSection() {
     totalEconomia: 0,
     linksValidados: 99.2,
   })
+  const [mensagemCompartilhar, setMensagemCompartilhar] = useState(
+    "Confira as melhores ofertas e cupons no SGC - Seu Guia de Compras!"
+  )
 
   useEffect(() => {
     fetch("/api/estatisticas")
       .then((res) => res.json())
       .then((data) => setStats(data))
+      .catch(() => {})
+
+    // Buscar mensagem personalizada de compartilhar
+    fetch("/api/config?chave=mensagem_compartilhar")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.valor) {
+          setMensagemCompartilhar(data.valor)
+        }
+      })
       .catch(() => {})
   }, [])
 
@@ -77,14 +90,15 @@ export function HeroSection() {
               size="lg"
               className="gap-2 px-8 text-base"
               onClick={() => {
+                const siteUrl = typeof window !== "undefined" ? window.location.origin : "https://sgcseuguiadecompras.com.br"
                 if (navigator.share) {
                   navigator.share({
                     title: "SGC - Seu Guia de Compras",
-                    text: "Compre melhor, pague menos e evite golpes!",
-                    url: "https://sgcseuguiadecompras.com.br",
+                    text: mensagemCompartilhar,
+                    url: siteUrl,
                   })
                 } else {
-                  navigator.clipboard.writeText("https://sgcseuguiadecompras.com.br")
+                  navigator.clipboard.writeText(`${mensagemCompartilhar} ${siteUrl}`)
                   alert("Link copiado!")
                 }
               }}

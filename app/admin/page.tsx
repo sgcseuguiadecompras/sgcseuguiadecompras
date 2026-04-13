@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Pencil, Trash2, Plus, LogOut, Package, Tag, Store, Home, Ticket, MessageSquare, Palette, Share2, ChevronUp, ChevronDown, Star, Check, X, FileText, Eye, EyeOff } from "lucide-react"
+import { Pencil, Trash2, Plus, LogOut, Package, Tag, Store, Home, Ticket, MessageSquare, Palette, Share2, ChevronUp, ChevronDown, Star, Check, X, FileText, Eye, EyeOff, Settings } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 
 interface Loja {
@@ -170,6 +170,10 @@ export default function AdminPage() {
   const [redesSociais, setRedesSociais] = useState<RedeSocial[]>([])
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([])
   const [posts, setPosts] = useState<Post[]>([])
+  const [configSite, setConfigSite] = useState({
+    mensagem_compartilhar: "Confira as melhores ofertas e cupons no SGC - Seu Guia de Compras!",
+  })
+  const [configSaving, setConfigSaving] = useState(false)
   const [tema, setTema] = useState<Tema>({
     cor_primaria: "#000000",
     cor_secundaria: "#6B7280",
@@ -264,6 +268,23 @@ export default function AdminPage() {
       setRedesSociais(Array.isArray(redesData) ? redesData : [])
       setAvaliacoes(Array.isArray(avaliacoesData) ? avaliacoesData : [])
       setPosts(Array.isArray(postsData) ? postsData : [])
+
+      // Carregar configurações do site
+      try {
+        const configRes = await fetch("/api/admin/config")
+        if (configRes.ok) {
+          const configData = await configRes.json()
+          if (Array.isArray(configData)) {
+            const configObj: Record<string, string> = {}
+            configData.forEach((c: { chave: string; valor: string }) => {
+              configObj[c.chave] = c.valor
+            })
+            setConfigSite({
+              mensagem_compartilhar: configObj.mensagem_compartilhar || "Confira as melhores ofertas e cupons no SGC - Seu Guia de Compras!",
+            })
+          }
+        }
+      } catch {}
     } catch (error) {
       console.error("Erro ao carregar dados:", error)
     } finally {
@@ -274,6 +295,27 @@ export default function AdminPage() {
   async function handleLogout() {
     await fetch("/api/admin/auth", { method: "DELETE" })
     router.push("/admin/login")
+  }
+
+  // Config handlers
+  async function handleSaveConfig() {
+    setConfigSaving(true)
+    try {
+      await fetch("/api/admin/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chave: "mensagem_compartilhar",
+          valor: configSite.mensagem_compartilhar,
+          descricao: "Mensagem exibida ao compartilhar o site",
+        }),
+      })
+      alert("Configuracoes salvas com sucesso!")
+    } catch {
+      alert("Erro ao salvar configuracoes")
+    } finally {
+      setConfigSaving(false)
+    }
   }
 
   // Produto handlers
@@ -900,6 +942,10 @@ export default function AdminPage() {
             <TabsTrigger value="blog" className="gap-2">
               <FileText className="h-4 w-4" />
               Blog
+            </TabsTrigger>
+            <TabsTrigger value="config" className="gap-2">
+              <Settings className="h-4 w-4" />
+              Config
             </TabsTrigger>
           </TabsList>
 
@@ -1614,6 +1660,38 @@ export default function AdminPage() {
                     </Table>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Config Tab */}
+          <TabsContent value="config">
+            <Card>
+              <CardHeader>
+                <CardTitle>Configuracoes do Site</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="config-mensagem">Mensagem de Compartilhar</Label>
+                    <Textarea
+                      id="config-mensagem"
+                      value={configSite.mensagem_compartilhar}
+                      onChange={(e) => setConfigSite({ ...configSite, mensagem_compartilhar: e.target.value })}
+                      placeholder="Confira as melhores ofertas..."
+                      rows={3}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Esta mensagem sera exibida quando os usuarios compartilharem o site nas redes sociais.
+                    </p>
+                  </div>
+
+                  <div className="flex justify-end pt-4">
+                    <Button onClick={handleSaveConfig} disabled={configSaving}>
+                      {configSaving ? "Salvando..." : "Salvar Configuracoes"}
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
