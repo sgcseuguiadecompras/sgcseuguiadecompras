@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Pencil, Trash2, Plus, LogOut, Package, Tag, Store, Home, Ticket, MessageSquare, Palette, Share2, ChevronUp, ChevronDown, Star, Check, X } from "lucide-react"
+import { Pencil, Trash2, Plus, LogOut, Package, Tag, Store, Home, Ticket, MessageSquare, Palette, Share2, ChevronUp, ChevronDown, Star, Check, X, FileText, Eye, EyeOff } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 
 interface Loja {
@@ -125,6 +125,22 @@ interface Avaliacao {
   produtos?: { id: string; nome: string }
 }
 
+interface Post {
+  id: string
+  titulo: string
+  slug: string
+  resumo: string | null
+  conteudo: string
+  imagem_capa: string | null
+  autor: string
+  categoria: string
+  tags: string[] | null
+  publicado: boolean
+  destaque: boolean
+  views: number
+  created_at: string
+}
+
 const emptyProduto = {
   nome: "",
   descricao: "",
@@ -142,6 +158,7 @@ const emptyCategoria = { nome: "", icone: "" }
 const emptyLoja = { nome: "", icone: "" }
 const emptyCupom = { codigo: "", descricao: "", validade: "", link: "", loja_id: "" }
 const emptyRedeSocial = { nome: "", icone: "", url: "", posicao: "rodape", ativo: true, ordem: 0 }
+const emptyPost = { titulo: "", slug: "", resumo: "", conteudo: "", imagem_capa: "", autor: "SGC", categoria: "Guia de Compra", tags: "", publicado: false, destaque: false }
 
 export default function AdminPage() {
   const router = useRouter()
@@ -152,6 +169,7 @@ export default function AdminPage() {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([])
   const [redesSociais, setRedesSociais] = useState<RedeSocial[]>([])
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([])
+  const [posts, setPosts] = useState<Post[]>([])
   const [tema, setTema] = useState<Tema>({
     cor_primaria: "#000000",
     cor_secundaria: "#6B7280",
@@ -184,6 +202,7 @@ export default function AdminPage() {
   const [lojaDialogOpen, setLojaDialogOpen] = useState(false)
   const [cupomDialogOpen, setCupomDialogOpen] = useState(false)
   const [redeDialogOpen, setRedeDialogOpen] = useState(false)
+  const [postDialogOpen, setPostDialogOpen] = useState(false)
   
   // Editing IDs
   const [editingProdutoId, setEditingProdutoId] = useState<string | null>(null)
@@ -191,6 +210,7 @@ export default function AdminPage() {
   const [editingLojaId, setEditingLojaId] = useState<string | null>(null)
   const [editingCupomId, setEditingCupomId] = useState<string | null>(null)
   const [editingRedeId, setEditingRedeId] = useState<string | null>(null)
+  const [editingPostId, setEditingPostId] = useState<string | null>(null)
   
   // Forms
   const [produtoForm, setProdutoForm] = useState(emptyProduto)
@@ -198,6 +218,7 @@ export default function AdminPage() {
   const [lojaForm, setLojaForm] = useState(emptyLoja)
   const [cupomForm, setCupomForm] = useState(emptyCupom)
   const [redeForm, setRedeForm] = useState(emptyRedeSocial)
+  const [postForm, setPostForm] = useState(emptyPost)
 
   useEffect(() => {
     loadData()
@@ -205,7 +226,7 @@ export default function AdminPage() {
 
   async function loadData() {
     try {
-      const [produtosRes, lojasRes, cuponsRes, categoriasRes, feedbacksRes, temaRes, redesRes, avaliacoesRes] = await Promise.all([
+      const [produtosRes, lojasRes, cuponsRes, categoriasRes, feedbacksRes, temaRes, redesRes, avaliacoesRes, postsRes] = await Promise.all([
         fetch("/api/admin/produtos"),
         fetch("/api/admin/lojas"),
         fetch("/api/admin/cupons"),
@@ -214,6 +235,7 @@ export default function AdminPage() {
         fetch("/api/admin/tema"),
         fetch("/api/admin/redes-sociais"),
         fetch("/api/admin/avaliacoes"),
+        fetch("/api/admin/posts"),
       ])
 
       if (produtosRes.status === 401) {
@@ -221,7 +243,7 @@ export default function AdminPage() {
         return
       }
 
-      const [produtosData, lojasData, cuponsData, categoriasData, feedbacksData, temaData, redesData, avaliacoesData] = await Promise.all([
+      const [produtosData, lojasData, cuponsData, categoriasData, feedbacksData, temaData, redesData, avaliacoesData, postsData] = await Promise.all([
         produtosRes.json(),
         lojasRes.json(),
         cuponsRes.json(),
@@ -230,6 +252,7 @@ export default function AdminPage() {
         temaRes.json(),
         redesRes.json(),
         avaliacoesRes.json(),
+        postsRes.json(),
       ])
 
       setProdutos(produtosData)
@@ -240,6 +263,7 @@ export default function AdminPage() {
       if (temaData) setTema(temaData)
       setRedesSociais(Array.isArray(redesData) ? redesData : [])
       setAvaliacoes(Array.isArray(avaliacoesData) ? avaliacoesData : [])
+      setPosts(Array.isArray(postsData) ? postsData : [])
     } catch (error) {
       console.error("Erro ao carregar dados:", error)
     } finally {
@@ -679,6 +703,89 @@ export default function AdminPage() {
     }
   }
 
+  // Post handlers
+  function openNewPostDialog() {
+    setEditingPostId(null)
+    setPostForm(emptyPost)
+    setPostDialogOpen(true)
+  }
+
+  function openEditPostDialog(post: Post) {
+    setEditingPostId(post.id)
+    setPostForm({
+      titulo: post.titulo,
+      slug: post.slug,
+      resumo: post.resumo || "",
+      conteudo: post.conteudo,
+      imagem_capa: post.imagem_capa || "",
+      autor: post.autor,
+      categoria: post.categoria,
+      tags: post.tags?.join(", ") || "",
+      publicado: post.publicado,
+      destaque: post.destaque,
+    })
+    setPostDialogOpen(true)
+  }
+
+  async function handleSavePost() {
+    setSaving(true)
+    try {
+      const url = editingPostId ? `/api/admin/posts/${editingPostId}` : "/api/admin/posts"
+      const method = editingPostId ? "PUT" : "POST"
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...postForm,
+          tags: postForm.tags ? postForm.tags.split(",").map(t => t.trim()).filter(Boolean) : [],
+        }),
+      })
+
+      if (res.ok) {
+        setPostDialogOpen(false)
+        loadData()
+      } else {
+        const error = await res.json()
+        alert("Erro: " + error.error)
+      }
+    } catch (error) {
+      console.error("Erro ao salvar:", error)
+      alert("Erro ao salvar post")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleDeletePost(id: string) {
+    if (!confirm("Tem certeza que deseja excluir este post?")) return
+    try {
+      const res = await fetch(`/api/admin/posts/${id}`, { method: "DELETE" })
+      if (res.ok) {
+        loadData()
+      } else {
+        const error = await res.json()
+        alert("Erro: " + error.error)
+      }
+    } catch (error) {
+      console.error("Erro ao excluir:", error)
+      alert("Erro ao excluir post")
+    }
+  }
+
+  async function togglePostPublicado(post: Post) {
+    try {
+      await fetch(`/api/admin/posts/${post.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...post, publicado: !post.publicado }),
+      })
+      loadData()
+    } catch (error) {
+      console.error("Erro ao atualizar post:", error)
+    }
+  }
+
   function toggleCategoria(catId: string) {
     setProdutoForm(prev => ({
       ...prev,
@@ -789,6 +896,10 @@ export default function AdminPage() {
             <TabsTrigger value="avaliacoes" className="gap-2">
               <Star className="h-4 w-4" />
               Avaliacoes
+            </TabsTrigger>
+            <TabsTrigger value="blog" className="gap-2">
+              <FileText className="h-4 w-4" />
+              Blog
             </TabsTrigger>
           </TabsList>
 
@@ -1428,6 +1539,84 @@ export default function AdminPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Blog Tab */}
+          <TabsContent value="blog">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Blog / Guias de Compra ({posts.length})</CardTitle>
+                <Button onClick={openNewPostDialog} size="sm" className="gap-1">
+                  <Plus className="h-4 w-4" />
+                  Novo Post
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {posts.length === 0 ? (
+                  <p className="py-8 text-center text-muted-foreground">
+                    Nenhum post cadastrado.
+                  </p>
+                ) : (
+                  <div className="max-h-[500px] overflow-y-auto">
+                    <Table>
+                      <TableHeader className="sticky top-0 bg-background z-10">
+                        <TableRow>
+                          <TableHead>Titulo</TableHead>
+                          <TableHead>Categoria</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Views</TableHead>
+                          <TableHead className="text-right">Acoes</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {posts.map((post) => (
+                          <TableRow key={post.id}>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium line-clamp-1">{post.titulo}</p>
+                                <p className="text-xs text-muted-foreground">{post.slug}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <span className="rounded bg-muted px-2 py-1 text-xs">{post.categoria}</span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <span className={`rounded px-2 py-1 text-xs ${post.publicado ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                  {post.publicado ? 'Publicado' : 'Rascunho'}
+                                </span>
+                                {post.destaque && (
+                                  <span className="rounded bg-blue-100 px-2 py-1 text-xs text-blue-700">Destaque</span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>{post.views}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => togglePostPublicado(post)}
+                                  title={post.publicado ? 'Despublicar' : 'Publicar'}
+                                >
+                                  {post.publicado ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => openEditPostDialog(post)}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleDeletePost(post.id)}>
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
 
         {/* Produto Dialog */}
@@ -1836,6 +2025,133 @@ export default function AdminPage() {
                   Cancelar
                 </Button>
                 <Button onClick={handleSaveRede} disabled={saving}>
+                  {saving ? "Salvando..." : "Salvar"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Post Dialog */}
+        <Dialog open={postDialogOpen} onOpenChange={setPostDialogOpen}>
+          <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                {editingPostId ? "Editar Post" : "Novo Post"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="post-titulo">Titulo *</Label>
+                <Input
+                  id="post-titulo"
+                  value={postForm.titulo}
+                  onChange={(e) => setPostForm({ ...postForm, titulo: e.target.value })}
+                  placeholder="Como economizar nas compras online"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="post-slug">Slug (URL)</Label>
+                <Input
+                  id="post-slug"
+                  value={postForm.slug}
+                  onChange={(e) => setPostForm({ ...postForm, slug: e.target.value })}
+                  placeholder="como-economizar-nas-compras-online"
+                />
+                <p className="text-xs text-muted-foreground">Deixe vazio para gerar automaticamente</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="post-resumo">Resumo</Label>
+                <Textarea
+                  id="post-resumo"
+                  value={postForm.resumo}
+                  onChange={(e) => setPostForm({ ...postForm, resumo: e.target.value })}
+                  placeholder="Breve descricao do post..."
+                  rows={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="post-conteudo">Conteudo (HTML) *</Label>
+                <Textarea
+                  id="post-conteudo"
+                  value={postForm.conteudo}
+                  onChange={(e) => setPostForm({ ...postForm, conteudo: e.target.value })}
+                  placeholder="<p>Seu conteudo aqui...</p>"
+                  rows={8}
+                />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="post-imagem">Imagem de Capa (URL)</Label>
+                  <Input
+                    id="post-imagem"
+                    value={postForm.imagem_capa}
+                    onChange={(e) => setPostForm({ ...postForm, imagem_capa: e.target.value })}
+                    placeholder="https://..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="post-autor">Autor</Label>
+                  <Input
+                    id="post-autor"
+                    value={postForm.autor}
+                    onChange={(e) => setPostForm({ ...postForm, autor: e.target.value })}
+                    placeholder="SGC"
+                  />
+                </div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="post-categoria">Categoria</Label>
+                  <Select
+                    value={postForm.categoria}
+                    onValueChange={(value) => setPostForm({ ...postForm, categoria: value })}
+                  >
+                    <SelectTrigger id="post-categoria">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Guia de Compra">Guia de Compra</SelectItem>
+                      <SelectItem value="Dicas">Dicas</SelectItem>
+                      <SelectItem value="Promocoes">Promocoes</SelectItem>
+                      <SelectItem value="Tecnologia">Tecnologia</SelectItem>
+                      <SelectItem value="Casa e Jardim">Casa e Jardim</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="post-tags">Tags (separadas por virgula)</Label>
+                  <Input
+                    id="post-tags"
+                    value={postForm.tags}
+                    onChange={(e) => setPostForm({ ...postForm, tags: e.target.value })}
+                    placeholder="economia, compras, dicas"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-6">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="post-publicado"
+                    checked={postForm.publicado}
+                    onCheckedChange={(checked) => setPostForm({ ...postForm, publicado: checked })}
+                  />
+                  <Label htmlFor="post-publicado">Publicado</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="post-destaque"
+                    checked={postForm.destaque}
+                    onCheckedChange={(checked) => setPostForm({ ...postForm, destaque: checked })}
+                  />
+                  <Label htmlFor="post-destaque">Destaque</Label>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setPostDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleSavePost} disabled={saving}>
                   {saving ? "Salvando..." : "Salvar"}
                 </Button>
               </div>
