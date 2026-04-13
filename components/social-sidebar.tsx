@@ -33,13 +33,22 @@ export function SocialSidebar() {
 
   useEffect(() => {
     fetch("/api/redes-sociais?posicao=lateral")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          console.error("[v0] Erro na API redes-sociais:", res.status, res.statusText)
+          return []
+        }
+        return res.json()
+      })
       .then((data) => {
+        console.log("[v0] Redes sociais recebidas:", data)
         if (Array.isArray(data)) {
           setRedes(data)
         }
       })
-      .catch(() => {})
+      .catch((err) => {
+        console.error("[v0] Erro ao buscar redes sociais:", err)
+      })
 
     // Mostrar barra após scroll (pequeno delay inicial)
     const handleScroll = () => {
