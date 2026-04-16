@@ -4,9 +4,7 @@ import { useEffect, useState } from "react"
 import { useParams, notFound } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
-import { SocialSidebar } from "@/components/social-sidebar"
+
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Calendar, Eye, ArrowLeft, User, Share2, BookOpen } from "lucide-react"
@@ -75,22 +73,18 @@ export default function PostPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen flex-col bg-background">
-        <SiteHeader />
-        <main className="flex-1 animate-pulse">
-          <div className="container max-w-4xl py-8">
-            <div className="h-8 w-32 rounded bg-muted" />
-            <div className="mt-8 h-10 rounded bg-muted" />
-            <div className="mt-4 h-6 w-1/2 rounded bg-muted" />
-            <div className="mt-8 aspect-video rounded-xl bg-muted" />
-            <div className="mt-8 space-y-4">
-              <div className="h-4 rounded bg-muted" />
-              <div className="h-4 rounded bg-muted" />
-              <div className="h-4 w-3/4 rounded bg-muted" />
-            </div>
+      <div className="animate-pulse">
+        <div className="container max-w-4xl py-8">
+          <div className="h-8 w-32 rounded bg-muted" />
+          <div className="mt-8 h-10 rounded bg-muted" />
+          <div className="mt-4 h-6 w-1/2 rounded bg-muted" />
+          <div className="mt-8 aspect-video rounded-xl bg-muted" />
+          <div className="mt-8 space-y-4">
+            <div className="h-4 rounded bg-muted" />
+            <div className="h-4 rounded bg-muted" />
+            <div className="h-4 w-3/4 rounded bg-muted" />
           </div>
-        </main>
-        <SiteFooter />
+        </div>
       </div>
     )
   }
@@ -98,12 +92,7 @@ export default function PostPage() {
   if (!post) return null
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <SiteHeader />
-      <SocialSidebar />
-
-      <main className="flex-1">
-        <article className="container max-w-4xl py-8 md:py-12">
+    <article className="container max-w-4xl py-8 md:py-12">
           {/* Voltar */}
           <Link href="/blog">
             <Button variant="ghost" size="sm" className="gap-2">
@@ -195,9 +184,5 @@ export default function PostPage() {
             </div>
           </footer>
         </article>
-      </main>
-
-      <SiteFooter />
-    </div>
   )
 }

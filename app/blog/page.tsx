@@ -3,9 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
-import { SocialSidebar } from "@/components/social-sidebar"
+
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -52,12 +50,8 @@ export default function BlogPage() {
   const categorias = ["Guia de Compra", "Dicas", "Promocoes", "Tecnologia", "Casa e Jardim"]
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <SiteHeader />
-      <SocialSidebar />
-
-      <main className="flex-1">
-        <section className="bg-gradient-to-br from-primary/10 to-primary/5 py-12 md:py-16">
+    <>
+      <section className="bg-gradient-to-br from-primary/10 to-primary/5 py-12 md:py-16">
           <div className="container">
             <div className="flex items-center gap-3">
               <BookOpen className="h-8 w-8 text-primary" />
@@ -166,9 +160,6 @@ export default function BlogPage() {
             </div>
           )}
         </section>
-      </main>
-
-      <SiteFooter />
-    </div>
+    </>
   )
 }
