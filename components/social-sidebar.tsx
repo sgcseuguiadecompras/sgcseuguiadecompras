@@ -11,6 +11,18 @@ interface RedeSocial {
   posicao: string
 }
 
+// Mapeamento de cores das redes sociais
+const colorMap: Record<string, string> = {
+  instagram: "#E4405F",
+  facebook: "#1877F2",
+  tiktok: "#000000",
+  youtube: "#FF0000",
+  whatsapp: "#25D366",
+  twitter: "#1DA1F2",
+  x: "#000000",
+  telegram: "#0088CC",
+}
+
 // Mapeamento de ícones
 const iconMap: Record<string, React.ReactNode> = {
   instagram: <Instagram className="h-5 w-5" />,
@@ -91,13 +103,18 @@ export function SocialSidebar() {
             return iconMap[iconKey] || <MessageCircle className="h-5 w-5" />
           }
 
+          // Obter cor da rede social
+          const iconKey = (rede.icone || rede.nome || "").toLowerCase()
+          const brandColor = colorMap[iconKey] || colorMap[rede.nome?.toLowerCase()] || undefined
+
           return (
             <a
               key={rede.id}
               href={rede.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm border border-border transition-transform hover:scale-110"
+              style={{ color: brandColor }}
               title={rede.nome}
             >
               {renderIcon()}
