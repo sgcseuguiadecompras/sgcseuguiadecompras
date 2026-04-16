@@ -23,6 +23,7 @@ export async function PUT(
     .from("produtos")
     .update({
       nome: body.nome,
+      slug: body.slug || null,
       descricao: body.descricao,
       imagem: body.imagem,
       preco: body.preco,

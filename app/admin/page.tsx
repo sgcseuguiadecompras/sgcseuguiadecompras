@@ -60,6 +60,7 @@ interface Categoria {
 interface Produto {
   id: string
   nome: string
+  slug: string | null
   descricao: string
   imagem: string[] | string | null
   preco: number
@@ -143,6 +144,7 @@ interface Post {
 
 const emptyProduto = {
   nome: "",
+  slug: "",
   descricao: "",
   imagens: [""] as string[],
   preco: 0,
@@ -336,6 +338,7 @@ export default function AdminPage() {
     }
     setProdutoForm({
       nome: produto.nome,
+      slug: produto.slug || "",
       descricao: produto.descricao || "",
       imagens,
       preco: produto.preco,
@@ -1714,6 +1717,18 @@ export default function AdminPage() {
                   onChange={(e) => setProdutoForm({ ...produtoForm, nome: e.target.value })}
                   placeholder="Nome do produto"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="slug">Slug (URL personalizada)</Label>
+                <Input
+                  id="slug"
+                  value={produtoForm.slug}
+                  onChange={(e) => setProdutoForm({ ...produtoForm, slug: e.target.value })}
+                  placeholder="meu-produto-personalizado"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Deixe vazio para gerar automaticamente a partir do nome
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="descricao">Descricao</Label>
