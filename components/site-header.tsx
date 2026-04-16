@@ -14,6 +14,7 @@ const navLinks = [
   { href: "/#categorias", label: "Categorias" },
   { href: "/#produtos", label: "Produtos" },
   { href: "/cupons", label: "Cupons" },
+  { href: "/blog", label: "Blog" },
   { href: "/salvos", label: "Salvos" },
 ]
 

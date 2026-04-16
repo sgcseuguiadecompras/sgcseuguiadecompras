@@ -38,6 +38,7 @@ const footerLinks = {
     { href: "/", label: "Início" },
     { href: "/#produtos", label: "Produtos" },
     { href: "/cupons", label: "Cupons" },
+    { href: "/blog", label: "Blog" },
     { href: "/#categorias", label: "Categorias" },
   ],
   lojas: [
