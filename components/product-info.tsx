@@ -89,7 +89,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       <Separator className="my-5" />
 
       {/* Description */}
-      <p className="text-sm leading-relaxed text-muted-foreground">
+      <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
         {product.description}
       </p>
 

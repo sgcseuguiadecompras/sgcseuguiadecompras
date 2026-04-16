@@ -278,9 +278,14 @@ export function ProductReviews({ product, reviews, supabaseProductId }: ProductR
             ))
           ) : (
             <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-12 text-center">
-              <MessageSquare className="mb-3 h-10 w-10 text-muted-foreground/40" />
-              <p className="text-sm font-medium text-foreground">Nenhuma avaliação ainda</p>
-              <p className="mt-1 text-xs text-muted-foreground">Este produto ainda não possui avaliações de usuários.</p>
+              <Star className="mb-3 h-10 w-10 text-primary/40" />
+              <p className="text-sm font-medium text-foreground">Seja o primeiro a avaliar este produto!</p>
+              <p className="mt-1 text-xs text-muted-foreground">Sua opiniao ajuda outros compradores a tomar decisoes.</p>
+              {supabaseProductId && !showForm && !submitted && (
+                <Button onClick={() => setShowForm(true)} variant="outline" size="sm" className="mt-4">
+                  Deixar Avaliacao
+                </Button>
+              )}
             </div>
           )}
         </div>
