@@ -12,7 +12,7 @@ import './globals.css'
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans" });
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://seuguiadecompras.com.br"
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.sgcseuguiadecompras.com.br"
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),

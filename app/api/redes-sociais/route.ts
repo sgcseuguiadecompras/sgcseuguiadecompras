@@ -9,7 +9,6 @@ export async function GET(request: Request) {
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      console.error("[v0] Variáveis de ambiente Supabase não configuradas")
       return NextResponse.json({ error: "Configuração incompleta" }, { status: 500 })
     }
 
@@ -33,15 +32,11 @@ export async function GET(request: Request) {
     const { data, error } = await query
 
     if (error) {
-      console.error("[v0] Erro ao buscar redes sociais:", error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
-
-    console.log("[v0] Redes sociais encontradas:", data?.length, "registros", posicao ? `(filtro: ${posicao})` : "(sem filtro)")
     
     return NextResponse.json(data || [])
-  } catch (err) {
-    console.error("[v0] Erro interno redes-sociais:", err)
+  } catch {
     return NextResponse.json({ error: "Erro interno" }, { status: 500 })
   }
 }

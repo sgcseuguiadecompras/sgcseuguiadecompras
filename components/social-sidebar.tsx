@@ -34,21 +34,15 @@ export function SocialSidebar() {
   useEffect(() => {
     fetch("/api/redes-sociais?posicao=lateral")
       .then((res) => {
-        if (!res.ok) {
-          console.error("[v0] Erro na API redes-sociais:", res.status, res.statusText)
-          return []
-        }
+        if (!res.ok) return []
         return res.json()
       })
       .then((data) => {
-        console.log("[v0] Redes sociais recebidas:", data)
         if (Array.isArray(data)) {
           setRedes(data)
         }
       })
-      .catch((err) => {
-        console.error("[v0] Erro ao buscar redes sociais:", err)
-      })
+      .catch(() => {})
 
     // Mostrar barra após scroll (pequeno delay inicial)
     const handleScroll = () => {
@@ -72,8 +66,8 @@ export function SocialSidebar() {
 
   return (
     <div
-      className={`fixed left-4 top-1/2 z-40 -translate-y-1/2 transition-all duration-300 ${
-        isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-full"
+      className={`fixed right-4 top-1/2 z-40 -translate-y-1/2 transition-all duration-300 ${
+        isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full"
       }`}
     >
       <div className="flex flex-col gap-2 rounded-full bg-card/90 p-2 shadow-lg backdrop-blur-sm border border-border">
