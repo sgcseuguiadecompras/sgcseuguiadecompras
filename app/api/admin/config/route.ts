@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { cookies } from "next/headers"
+
+async function checkAuth() {
+  const cookieStore = await cookies()
+  return cookieStore.get("admin_auth")?.value === "authenticated"
+}
 
 // GET - Buscar todas as configurações
 export async function GET() {
@@ -23,6 +29,10 @@ export async function GET() {
 
 // POST - Criar ou atualizar configuração
 export async function POST(request: Request) {
+  if (!(await checkAuth())) {
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
+  }
+
   try {
     const supabase = await createClient()
     const body = await request.json()

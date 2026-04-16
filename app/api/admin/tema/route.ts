@@ -43,7 +43,7 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   const cookieStore = await cookies()
-  const isLoggedIn = cookieStore.get("admin_logged_in")?.value === "true"
+  const isLoggedIn = cookieStore.get("admin_auth")?.value === "authenticated"
 
   if (!isLoggedIn) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 })

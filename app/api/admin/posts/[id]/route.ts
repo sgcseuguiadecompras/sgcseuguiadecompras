@@ -4,8 +4,7 @@ import { cookies } from "next/headers"
 
 async function checkAuth() {
   const cookieStore = await cookies()
-  const session = cookieStore.get("admin_session")
-  return session?.value === "authenticated"
+  return cookieStore.get("admin_auth")?.value === "authenticated"
 }
 
 // PUT - Atualizar post

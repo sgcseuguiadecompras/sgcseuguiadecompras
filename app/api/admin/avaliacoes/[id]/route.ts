@@ -1,20 +1,24 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { cookies } from "next/headers"
+
+async function checkAuth() {
+  const cookieStore = await cookies()
+  return cookieStore.get("admin_auth")?.value === "authenticated"
+}
 
 // PUT - Aprovar/rejeitar avaliacao
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!(await checkAuth())) {
+    return NextResponse.json({ error: "Nao autorizado" }, { status: 401 })
+  }
+
   try {
     const supabase = await createClient()
     const { id } = await params
-    
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: "Nao autorizado" }, { status: 401 })
-    }
-
     const body = await request.json()
 
     const { data, error } = await supabase
@@ -39,14 +43,13 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!(await checkAuth())) {
+    return NextResponse.json({ error: "Nao autorizado" }, { status: 401 })
+  }
+
   try {
     const supabase = await createClient()
     const { id } = await params
-    
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: "Nao autorizado" }, { status: 401 })
-    }
 
     const { error } = await supabase
       .from("avaliacoes")
