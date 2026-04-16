@@ -92,7 +92,7 @@ export default function PostPage() {
   if (!post) return null
 
   return (
-    <article className="container max-w-4xl py-8 md:py-12">
+    <article className="mx-auto max-w-[800px] px-4 py-8 md:px-5 md:py-12">
           {/* Voltar */}
           <Link href="/blog">
             <Button variant="ghost" size="sm" className="gap-2">
