@@ -74,7 +74,7 @@ export default function PostPage() {
   if (loading) {
     return (
       <div className="animate-pulse">
-        <div className="container max-w-4xl py-8">
+        <div className="mx-auto w-full max-w-[800px] px-4 py-8 sm:px-6 md:px-8 lg:px-10">
           <div className="h-8 w-32 rounded bg-muted" />
           <div className="mt-8 h-10 rounded bg-muted" />
           <div className="mt-4 h-6 w-1/2 rounded bg-muted" />
@@ -92,7 +92,7 @@ export default function PostPage() {
   if (!post) return null
 
   return (
-    <article className="mx-auto max-w-[800px] px-4 py-8 md:px-5 md:py-12">
+    <article className="mx-auto w-full max-w-[800px] px-4 py-8 sm:px-6 md:px-8 md:py-12 lg:px-10">
           {/* Voltar */}
           <Link href="/blog">
             <Button variant="ghost" size="sm" className="gap-2">

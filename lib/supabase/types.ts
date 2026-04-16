@@ -28,6 +28,7 @@ export interface Categoria {
 export interface Produto {
   id: string
   nome: string
+  slug?: string | null
   descricao?: string
   imagem?: string[] | string | null  // Agora é um array de strings
   preco: number

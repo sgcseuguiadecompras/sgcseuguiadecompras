@@ -18,7 +18,7 @@ function mapProdutoToProduct(produto: ProdutoComRelacoes): ProductWithRelations 
   
   return {
     id: produto.id,
-    slug: produto.id, // usar ID como slug se não existir
+    slug: produto.slug || produto.id, // usar slug real ou ID como fallback
     name: produto.nome,
     description: produto.descricao || '',
     shortDescription: produto.descricao?.substring(0, 100) || '',
@@ -225,9 +225,53 @@ export const supabaseProductRepository = {
     return mapProdutoToProduct(produtoComCategorias)
   },
 
-  // Buscar produto por slug (usando ID como slug)
+  // Buscar produto por slug
   async findBySlugWithRelations(slug: string): Promise<ProductWithRelations | null> {
-    return this.getProductById(slug)
+    const supabase = await createClient()
+    
+    // Primeiro tentar buscar pelo slug real
+    let { data, error } = await supabase
+      .from('produtos')
+      .select(`
+        *,
+        lojas (*),
+        cupons (*)
+      `)
+      .eq('slug', slug)
+      .single()
+    
+    // Se não encontrar pelo slug, tenta buscar pelo ID (compatibilidade com URLs antigas)
+    if (error || !data) {
+      const result = await supabase
+        .from('produtos')
+        .select(`
+          *,
+          lojas (*),
+          cupons (*)
+        `)
+        .eq('id', slug)
+        .single()
+      
+      data = result.data
+      error = result.error
+    }
+    
+    if (error || !data) {
+      return null
+    }
+
+    // Buscar categorias
+    const { data: categoriaData } = await supabase
+      .from('produto_categorias')
+      .select('categorias (*)')
+      .eq('produto_id', data.id)
+    
+    const produtoComCategorias: ProdutoComRelacoes = {
+      ...data,
+      categorias: categoriaData?.map((pc: { categorias: unknown }) => pc.categorias).filter(Boolean) || [],
+    }
+
+    return mapProdutoToProduct(produtoComCategorias)
   },
 
   // Buscar produtos relacionados (mesma categoria)
