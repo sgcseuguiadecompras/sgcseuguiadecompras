@@ -12,22 +12,15 @@ import './globals.css'
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans" });
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.sgcseuguiadecompras.com.br"
-
 export const metadata: Metadata = {
-  metadataBase: new URL(baseUrl),
-  title: {
-    default: 'SGC - Seu Guia de Compras',
-    template: '%s | SGC',
-  },
-  description: 'Compre melhor, pague menos e evite golpes. Seu guia inteligente de compras online com ofertas verificadas, cupons atualizados e recomendacoes de confianca.',
+  metadataBase: new URL('https://www.sgcseuguiadecompras.com.br'),
+  title: 'SGC - Seu Guia de Compras',
+  description: 'Compre melhor, pague menos e evite golpes! Ofertas verificadas e cupons atualizados.',
   keywords: ['compras online', 'cupons', 'ofertas', 'desconto', 'shopee', 'amazon', 'mercado livre', 'guia de compras'],
   openGraph: {
     title: 'SGC - Seu Guia de Compras',
-    description: 'Compre melhor, pague menos e evite golpes. Ofertas verificadas e cupons atualizados.',
-    type: 'website',
-    locale: 'pt_BR',
-    url: baseUrl,
+    description: 'Compre melhor, pague menos e evite golpes! Ofertas verificadas e cupons atualizados.',
+    url: 'https://www.sgcseuguiadecompras.com.br',
     siteName: 'SGC - Seu Guia de Compras',
     images: [
       {
@@ -37,11 +30,13 @@ export const metadata: Metadata = {
         alt: 'SGC - Seu Guia de Compras',
       },
     ],
+    locale: 'pt_BR',
+    type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'SGC - Seu Guia de Compras',
-    description: 'Compre melhor, pague menos e evite golpes.',
+    description: 'Compre melhor, pague menos e evite golpes! Ofertas verificadas e cupons atualizados.',
     images: ['https://i.postimg.cc/ZnJgdRNQ/SGC.png'],
   },
 }
