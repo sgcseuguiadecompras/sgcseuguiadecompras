@@ -94,6 +94,22 @@ export default function PostPage() {
 
   if (!post) return null
 
+  // Processar conteudo: se nao contem tags HTML, converter quebras de linha em <br> e paragrafos
+  const processContent = (content: string) => {
+    // Verifica se ja contem tags HTML
+    const hasHtmlTags = /<[^>]+>/.test(content)
+    if (hasHtmlTags) {
+      return content
+    }
+    // Converte quebras de linha duplas em paragrafos e simples em <br>
+    return content
+      .split(/\n\n+/)
+      .map(paragraph => `<p>${paragraph.replace(/\n/g, '<br>')}</p>`)
+      .join('')
+  }
+
+  const formattedContent = processContent(post.conteudo)
+
   return (
     <div 
       className="mx-auto w-full max-w-3xl px-4 py-8 md:px-6 md:py-12"
@@ -168,9 +184,9 @@ export default function PostPage() {
 
         {/* Conteudo */}
         <div
-          className="prose prose-lg mt-8 max-w-none dark:prose-invert prose-headings:font-bold prose-a:text-primary prose-img:rounded-xl [&>*]:mx-0"
-          style={{ paddingLeft: 0, paddingRight: 0 }}
-          dangerouslySetInnerHTML={{ __html: post.conteudo }}
+          className="prose prose-lg mt-8 max-w-none dark:prose-invert prose-headings:font-bold prose-a:text-primary prose-img:rounded-xl"
+          style={{ whiteSpace: 'pre-wrap' }}
+          dangerouslySetInnerHTML={{ __html: formattedContent }}
         />
 
         {/* Rodape do Post */}
