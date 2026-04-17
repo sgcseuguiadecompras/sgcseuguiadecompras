@@ -73,7 +73,10 @@ export default function PostPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-4 py-8 md:px-6 md:py-12">
+      <div 
+        className="mx-auto w-full max-w-3xl px-4 py-8 md:px-6 md:py-12"
+        style={{ paddingLeft: '1rem', paddingRight: '1rem' }}
+      >
         <div className="animate-pulse">
           <div className="h-8 w-32 rounded bg-muted" />
           <div className="mt-8 h-10 rounded bg-muted" />
@@ -92,7 +95,10 @@ export default function PostPage() {
   if (!post) return null
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-8 md:px-6 md:py-12">
+    <div 
+      className="mx-auto w-full max-w-3xl px-4 py-8 md:px-6 md:py-12"
+      style={{ paddingLeft: '1rem', paddingRight: '1rem' }}
+    >
       <article>
         {/* Voltar */}
         <Link href="/blog">
@@ -162,7 +168,8 @@ export default function PostPage() {
 
         {/* Conteudo */}
         <div
-          className="prose prose-lg mt-8 max-w-none dark:prose-invert prose-headings:font-bold prose-a:text-primary prose-img:rounded-xl"
+          className="prose prose-lg mt-8 max-w-none dark:prose-invert prose-headings:font-bold prose-a:text-primary prose-img:rounded-xl [&>*]:mx-0"
+          style={{ paddingLeft: 0, paddingRight: 0 }}
           dangerouslySetInnerHTML={{ __html: post.conteudo }}
         />
 
