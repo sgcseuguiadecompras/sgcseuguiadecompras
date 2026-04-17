@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     siteName: 'SGC - Seu Guia de Compras',
     images: [
       {
-        url: '/og-image.jpg',
+        url: 'https://i.postimg.cc/ZnJgdRNQ/SGC.png',
         width: 1200,
         height: 630,
         alt: 'SGC - Seu Guia de Compras',
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'SGC - Seu Guia de Compras',
     description: 'Compre melhor, pague menos e evite golpes.',
-    images: ['/og-image.jpg'],
+    images: ['https://i.postimg.cc/ZnJgdRNQ/SGC.png'],
   },
 }
 
