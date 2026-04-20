@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Smartphone, Home, Shirt, Sparkles, Dumbbell, BookOpen, Gamepad2, Car, Package } from "lucide-react"
 import { supabaseCategoryRepository } from "@/lib/supabase/categories"
+import { CategoryIcon } from "./category-icon"
 
 const iconMap: Record<string, React.ElementType> = {
   Smartphone,
@@ -31,15 +32,21 @@ export async function CategoryGrid() {
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
           {categories.map((cat) => {
-            const Icon = iconMap[cat.icon] || Smartphone
+            const iconUrl = cat.imageUrl?.trim() || ""
+            
             return (
               <Link
                 key={cat.id}
-                href={`/#produtos`}
+                href={`/categoria/${cat.slug}`}
                 className="group flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary transition-colors group-hover:bg-primary/10">
-                  <Icon className="h-6 w-6 text-primary" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary transition-colors group-hover:bg-primary/10 overflow-hidden">
+                  <CategoryIcon 
+                    imageUrl={iconUrl} 
+                    iconName={cat.icon} 
+                    name={cat.name}
+                    className="h-6 w-6"
+                  />
                 </div>
                 <div className="text-center">
                   <span className="text-sm font-medium text-foreground">{cat.name}</span>

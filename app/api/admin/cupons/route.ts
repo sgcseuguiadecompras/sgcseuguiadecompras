@@ -16,7 +16,7 @@ export async function GET() {
   
   const { data: cupons, error } = await supabase
     .from("cupons")
-    .select("*")
+    .select("*, lojas(*)")
     .order("codigo")
 
   if (error) {
@@ -40,8 +40,10 @@ export async function POST(request: Request) {
       codigo: body.codigo,
       descricao: body.descricao || null,
       validade: body.validade || null,
+      link: body.link || null,
+      loja_id: body.loja_id || null,
     })
-    .select()
+    .select("*, lojas(*)")
     .single()
 
   if (error) {

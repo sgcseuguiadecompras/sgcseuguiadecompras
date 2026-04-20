@@ -53,13 +53,27 @@ export async function POST(request: Request) {
   const supabase = await createClient()
   const body = await request.json()
 
+  // Gerar slug automaticamente se não fornecido
+  let slug = body.slug
+  if (!slug && body.nome) {
+    slug = body.nome
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+  }
+
   const { data, error } = await supabase
     .from("produtos")
     .insert({
       nome: body.nome,
+      slug: slug || null,
       descricao: body.descricao,
       imagem: body.imagem,
       preco: body.preco,
+      preco_original: body.preco_original || null,
       avaliacao: body.avaliacao,
       loja_id: body.loja_id || null,
       cupom_id: body.cupom_id || null,

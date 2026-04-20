@@ -18,7 +18,7 @@ function mapProdutoToProduct(produto: ProdutoComRelacoes): ProductWithRelations 
   
   return {
     id: produto.id,
-    slug: produto.id, // usar ID como slug se não existir
+    slug: produto.slug || produto.id, // usar slug real ou ID como fallback
     name: produto.nome,
     description: produto.descricao || '',
     shortDescription: produto.descricao?.substring(0, 100) || '',
@@ -32,8 +32,10 @@ function mapProdutoToProduct(produto: ProdutoComRelacoes): ProductWithRelations 
     reviewCount: 0,
     clickCount: 0,
     currentPrice: produto.preco,
-    originalPrice: undefined,
-    discount: undefined,
+    originalPrice: produto.preco_original || undefined,
+    discount: produto.preco_original && produto.preco_original > produto.preco 
+      ? Math.round((1 - produto.preco / produto.preco_original) * 100) 
+      : undefined,
     status: 'active',
     isFeatured: true,
     isTopRated: (produto.avaliacao || 0) >= 4.5,
@@ -79,7 +81,7 @@ function mapProdutoToProduct(produto: ProdutoComRelacoes): ProductWithRelations 
 }
 
 export const supabaseProductRepository = {
-  // Buscar produtos em destaque
+  // Buscar produtos em destaque (ordenados por data de criação, mais novos primeiro)
   async getFeaturedProducts(limit = 8): Promise<ProductWithRelations[]> {
     const supabase = await createClient()
     
@@ -90,6 +92,7 @@ export const supabaseProductRepository = {
         lojas (*),
         cupons (*)
       `)
+      .order('created_at', { ascending: false })
       .limit(limit)
     
     if (error) {
@@ -153,7 +156,7 @@ export const supabaseProductRepository = {
     return produtosComCategorias.map(mapProdutoToProduct)
   },
 
-  // Buscar todos os produtos
+  // Buscar todos os produtos (ordenados por data de criação, mais novos primeiro)
   async getAllProducts(): Promise<ProductWithRelations[]> {
     const supabase = await createClient()
     
@@ -164,6 +167,7 @@ export const supabaseProductRepository = {
         lojas (*),
         cupons (*)
       `)
+      .order('created_at', { ascending: false })
     
     if (error) {
       console.error('[v0] Erro ao buscar todos produtos:', error)
@@ -221,9 +225,53 @@ export const supabaseProductRepository = {
     return mapProdutoToProduct(produtoComCategorias)
   },
 
-  // Buscar produto por slug (usando ID como slug)
+  // Buscar produto por slug
   async findBySlugWithRelations(slug: string): Promise<ProductWithRelations | null> {
-    return this.getProductById(slug)
+    const supabase = await createClient()
+    
+    // Primeiro tentar buscar pelo slug real
+    let { data, error } = await supabase
+      .from('produtos')
+      .select(`
+        *,
+        lojas (*),
+        cupons (*)
+      `)
+      .eq('slug', slug)
+      .single()
+    
+    // Se não encontrar pelo slug, tenta buscar pelo ID (compatibilidade com URLs antigas)
+    if (error || !data) {
+      const result = await supabase
+        .from('produtos')
+        .select(`
+          *,
+          lojas (*),
+          cupons (*)
+        `)
+        .eq('id', slug)
+        .single()
+      
+      data = result.data
+      error = result.error
+    }
+    
+    if (error || !data) {
+      return null
+    }
+
+    // Buscar categorias
+    const { data: categoriaData } = await supabase
+      .from('produto_categorias')
+      .select('categorias (*)')
+      .eq('produto_id', data.id)
+    
+    const produtoComCategorias: ProdutoComRelacoes = {
+      ...data,
+      categorias: categoriaData?.map((pc: { categorias: unknown }) => pc.categorias).filter(Boolean) || [],
+    }
+
+    return mapProdutoToProduct(produtoComCategorias)
   },
 
   // Buscar produtos relacionados (mesma categoria)
@@ -287,5 +335,90 @@ export const supabaseProductRepository = {
     )
 
     return produtosComCategorias.map(mapProdutoToProduct)
+  },
+
+  // Buscar produtos por categoria (slug)
+  async getProductsByCategory(categorySlug: string): Promise<ProductWithRelations[]> {
+    const supabase = await createClient()
+    
+    // Primeiro, buscar a categoria pelo slug
+    const { data: categoria, error: catError } = await supabase
+      .from('categorias')
+      .select('id, nome, slug')
+      .eq('slug', categorySlug)
+      .single()
+    
+    if (catError || !categoria) {
+      console.error('[v0] Categoria não encontrada:', categorySlug)
+      return []
+    }
+
+    // Buscar os IDs dos produtos desta categoria
+    const { data: produtoCategorias } = await supabase
+      .from('produto_categorias')
+      .select('produto_id')
+      .eq('categoria_id', categoria.id)
+
+    if (!produtoCategorias || produtoCategorias.length === 0) {
+      return []
+    }
+
+    const produtoIds = produtoCategorias.map(pc => pc.produto_id)
+
+    // Buscar os produtos
+    const { data, error } = await supabase
+      .from('produtos')
+      .select(`
+        *,
+        lojas (*),
+        cupons (*)
+      `)
+      .in('id', produtoIds)
+      .order('created_at', { ascending: false })
+
+    if (error || !data) {
+      console.error('[v0] Erro ao buscar produtos da categoria:', error)
+      return []
+    }
+
+    // Buscar categorias para cada produto
+    const produtosComCategorias = await Promise.all(
+      data.map(async (produto) => {
+        const { data: categoriaData } = await supabase
+          .from('produto_categorias')
+          .select('categorias (*)')
+          .eq('produto_id', produto.id)
+        
+        return {
+          ...produto,
+          categorias: categoriaData?.map((pc: { categorias: unknown }) => pc.categorias).filter(Boolean) || [],
+        } as ProdutoComRelacoes
+      })
+    )
+
+    return produtosComCategorias.map(mapProdutoToProduct)
+  },
+
+  // Buscar categoria por slug
+  async getCategoryBySlug(slug: string) {
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase
+      .from('categorias')
+      .select('*')
+      .eq('slug', slug)
+      .single()
+    
+    if (error || !data) {
+      return null
+    }
+    
+    return {
+      id: data.id,
+      name: data.nome,
+      slug: data.slug,
+      icon: 'Package',
+      imageUrl: data.icone || undefined,
+    }
   },
 }

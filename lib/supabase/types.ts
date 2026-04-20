@@ -28,9 +28,11 @@ export interface Categoria {
 export interface Produto {
   id: string
   nome: string
+  slug?: string | null
   descricao?: string
   imagem?: string[] | string | null  // Agora é um array de strings
   preco: number
+  preco_original?: number | null
   avaliacao?: number
   loja_id?: string
   cupom_id?: string
