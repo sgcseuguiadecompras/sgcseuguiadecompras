@@ -39,10 +39,14 @@ export function parsePrice(priceStr: string): number {
   return isNaN(value) ? 0 : value
 }
 
-// Formatar preço para input (ex: 5955.08)
+// Formatar preço para input no formato brasileiro (ex: 1.999,99)
 export function formatPriceForInput(price: number | undefined | null): string {
-  if (price === undefined || price === null || isNaN(price)) {
+  if (price === undefined || price === null || isNaN(price) || price === 0) {
     return ""
   }
-  return price.toFixed(2)
+  // Formata no padrão brasileiro sem o símbolo R$
+  return new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(price)
 }

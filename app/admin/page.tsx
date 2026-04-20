@@ -33,7 +33,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Pencil, Trash2, Plus, LogOut, Package, Tag, Store, Home, Ticket, MessageSquare, Palette, Share2, ChevronUp, ChevronDown, Star, Check, X, FileText, Eye, EyeOff, Settings } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
-import { formatPrice, parsePrice } from "@/lib/utils/format"
+import { formatPrice, parsePrice, formatPriceForInput } from "@/lib/utils/format"
 
 interface Loja {
   id: string
@@ -148,8 +148,8 @@ const emptyProduto = {
   slug: "",
   descricao: "",
   imagens: [""] as string[],
-  preco: 0,
-  preco_original: 0,
+  preco: "",
+  preco_original: "",
   avaliacao: 0,
   loja_id: "",
   cupom_id: "",
@@ -342,8 +342,8 @@ export default function AdminPage() {
       slug: produto.slug || "",
       descricao: produto.descricao || "",
       imagens,
-      preco: produto.preco,
-      preco_original: produto.preco_original || 0,
+      preco: formatPriceForInput(produto.preco),
+      preco_original: formatPriceForInput(produto.preco_original),
       avaliacao: produto.avaliacao || 0,
       loja_id: produto.loja_id || "",
       cupom_id: produto.cupom_id || "",
@@ -370,8 +370,8 @@ export default function AdminPage() {
         body: JSON.stringify({
           ...produtoForm,
           imagem: imagensFiltradas,
-          preco: Number(produtoForm.preco),
-          preco_original: produtoForm.preco_original ? Number(produtoForm.preco_original) : null,
+          preco: parsePrice(produtoForm.preco),
+          preco_original: produtoForm.preco_original ? parsePrice(produtoForm.preco_original) : null,
           avaliacao: Number(produtoForm.avaliacao),
           loja_id: produtoForm.loja_id || null,
           cupom_id: produtoForm.cupom_id || null,
@@ -1780,23 +1780,23 @@ export default function AdminPage() {
                   <Label htmlFor="preco">Preço (R$) *</Label>
                   <Input
                     id="preco"
-                    type="number"
-                    step="0.01"
+                    type="text"
+                    inputMode="decimal"
                     value={produtoForm.preco}
-                    onChange={(e) => setProdutoForm({ ...produtoForm, preco: Number(e.target.value) })}
-                    placeholder="Ex: 5955.08"
+                    onChange={(e) => setProdutoForm({ ...produtoForm, preco: e.target.value })}
+                    placeholder="Ex: 1.999,99"
                   />
-                  <p className="text-xs text-muted-foreground">Digite o valor em reais (ex: 5955.08)</p>
+                  <p className="text-xs text-muted-foreground">Formato: 1.999,99</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="preco_original">Preço Original (De:)</Label>
                   <Input
                     id="preco_original"
-                    type="number"
-                    step="0.01"
-                    value={produtoForm.preco_original || ""}
-                    onChange={(e) => setProdutoForm({ ...produtoForm, preco_original: e.target.value ? Number(e.target.value) : 0 })}
-                    placeholder="Deixe vazio se não houver desconto"
+                    type="text"
+                    inputMode="decimal"
+                    value={produtoForm.preco_original}
+                    onChange={(e) => setProdutoForm({ ...produtoForm, preco_original: e.target.value })}
+                    placeholder="Ex: 2.499,99"
                   />
                 </div>
                 <div className="space-y-2">
