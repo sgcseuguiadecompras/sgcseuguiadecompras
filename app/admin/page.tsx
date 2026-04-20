@@ -33,6 +33,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Pencil, Trash2, Plus, LogOut, Package, Tag, Store, Home, Ticket, MessageSquare, Palette, Share2, ChevronUp, ChevronDown, Star, Check, X, FileText, Eye, EyeOff, Settings } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
+import { formatPrice, parsePrice } from "@/lib/utils/format"
 
 interface Loja {
   id: string
@@ -983,7 +984,7 @@ export default function AdminPage() {
                         {produtos.map((produto) => (
                           <TableRow key={produto.id}>
                             <TableCell className="font-medium">{produto.nome}</TableCell>
-                            <TableCell>R$ {Number(produto.preco).toFixed(2)}</TableCell>
+                            <TableCell>{formatPrice(Number(produto.preco))}</TableCell>
                             <TableCell>{produto.lojas?.nome || "-"}</TableCell>
                             <TableCell>
                               {produto.categorias?.map(c => c.nome).join(", ") || "-"}
@@ -1776,28 +1777,30 @@ export default function AdminPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="preco">Preco (R$) *</Label>
+                  <Label htmlFor="preco">Preço (R$) *</Label>
                   <Input
                     id="preco"
                     type="number"
                     step="0.01"
                     value={produtoForm.preco}
                     onChange={(e) => setProdutoForm({ ...produtoForm, preco: Number(e.target.value) })}
+                    placeholder="Ex: 5955.08"
                   />
+                  <p className="text-xs text-muted-foreground">Digite o valor em reais (ex: 5955.08)</p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="preco_original">Preco Original (De:)</Label>
+                  <Label htmlFor="preco_original">Preço Original (De:)</Label>
                   <Input
                     id="preco_original"
                     type="number"
                     step="0.01"
                     value={produtoForm.preco_original || ""}
                     onChange={(e) => setProdutoForm({ ...produtoForm, preco_original: e.target.value ? Number(e.target.value) : 0 })}
-                    placeholder="Deixe vazio se nao houver desconto"
+                    placeholder="Deixe vazio se não houver desconto"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="avaliacao">Avaliacao (0-5)</Label>
+                  <Label htmlFor="avaliacao">Avaliação (0-5)</Label>
                   <Input
                     id="avaliacao"
                     type="number"

@@ -5,6 +5,7 @@ import { Star, ExternalLink } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { SaveButton } from "@/components/save-button"
+import { formatPrice } from "@/lib/utils/format"
 import type { ProductWithRelations } from "@/lib/db"
 
 interface ProductCardProps {
@@ -96,11 +97,11 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Price */}
         <div className="mt-3 flex items-end gap-2">
           <span className="text-lg font-bold text-foreground">
-            R$ {(product.currentPrice || 0).toFixed(2).replace(".", ",")}
+            {formatPrice(product.currentPrice)}
           </span>
           {product.originalPrice && (
             <span className="text-xs text-muted-foreground line-through">
-              R$ {product.originalPrice.toFixed(2).replace(".", ",")}
+              {formatPrice(product.originalPrice)}
             </span>
           )}
         </div>

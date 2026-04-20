@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ShareButtons } from "@/components/share-buttons"
 import { SaveButton } from "@/components/save-button"
+import { formatPrice } from "@/lib/utils/format"
 import type { ProductWithRelations } from "@/lib/db"
 
 interface ProductInfoProps {
@@ -72,15 +73,15 @@ export function ProductInfo({ product }: ProductInfoProps) {
       {/* Price */}
       <div className="mt-4 flex items-end gap-3">
         <span className="text-3xl font-bold text-foreground">
-          R$ {(product.currentPrice || 0).toFixed(2).replace(".", ",")}
+          {formatPrice(product.currentPrice)}
         </span>
         {product.originalPrice && product.currentPrice && (
           <div className="flex flex-col">
             <span className="text-sm text-muted-foreground line-through">
-              R$ {product.originalPrice.toFixed(2).replace(".", ",")}
+              {formatPrice(product.originalPrice)}
             </span>
             <span className="text-xs font-medium text-primary">
-              Economia de R$ {(product.originalPrice - product.currentPrice).toFixed(2).replace(".", ",")}
+              Economia de {formatPrice(product.originalPrice - product.currentPrice)}
             </span>
           </div>
         )}
