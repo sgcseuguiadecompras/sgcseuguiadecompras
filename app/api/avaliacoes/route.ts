@@ -32,29 +32,33 @@ export async function GET(request: Request) {
   }
 }
 
-// POST - Enviar nova avaliacao
+// POST - Enviar nova avaliação
 export async function POST(request: Request) {
   try {
     const supabase = createClient(supabaseUrl, supabaseAnonKey)
     const body = await request.json()
 
-    if (!body.produto_id || !body.nome_usuario || !body.nota) {
-      return NextResponse.json({ error: "Campos obrigatorios: produto_id, nome_usuario, nota" }, { status: 400 })
+    // Apenas nota e comentário são obrigatórios
+    if (!body.produto_id || !body.nota || !body.comentario?.trim()) {
+      return NextResponse.json({ error: "Campos obrigatórios: nota e comentário" }, { status: 400 })
     }
 
     if (body.nota < 1 || body.nota > 5) {
       return NextResponse.json({ error: "Nota deve ser entre 1 e 5" }, { status: 400 })
     }
 
+    // Se nome não fornecido, usar "Usuário SGC"
+    const nomeUsuario = body.nome_usuario?.trim() || "Usuário SGC"
+
     const { data, error } = await supabase
       .from("avaliacoes")
       .insert({
         produto_id: body.produto_id,
-        nome_usuario: body.nome_usuario,
-        email_usuario: body.email_usuario || null,
+        nome_usuario: nomeUsuario,
+        email_usuario: body.rede_social || null, // Usar campo rede_social no lugar de email
         nota: body.nota,
-        comentario: body.comentario || null,
-        aprovado: false, // Aguardando moderacao
+        comentario: body.comentario,
+        aprovado: false, // Aguardando moderação
       })
       .select()
       .single()
@@ -65,7 +69,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ 
       success: true, 
-      message: "Avaliacao enviada! Aguardando aprovacao.",
+      message: "Avaliação enviada! Aguardando aprovação.",
       data 
     })
   } catch {

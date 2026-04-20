@@ -25,7 +25,7 @@ export function SalvosClient() {
         </div>
         <h2 className="text-xl font-semibold text-foreground">Nenhum produto salvo</h2>
         <p className="mt-2 max-w-md text-muted-foreground">
-          Clique no icone de coracao nos produtos para salva-los aqui e comprar depois.
+          Clique no ícone de coração nos produtos para salvá-los aqui e comprar depois.
         </p>
         <Button asChild className="mt-6">
           <Link href="/#produtos">

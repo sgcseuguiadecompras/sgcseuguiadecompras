@@ -74,7 +74,7 @@ export function HeroSection() {
 
           {/* Subtext */}
           <p className="mt-5 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
-            Avaliacoes reais, cupons atualizados e ofertas verificadas dos maiores marketplaces do Brasil.
+            Avaliações reais, cupons atualizados e ofertas verificadas dos maiores marketplaces do Brasil.
           </p>
 
           {/* CTA Buttons */}
@@ -122,7 +122,7 @@ export function HeroSection() {
             </div>
             <div className="flex flex-col items-center">
               <span className="text-2xl font-bold text-foreground md:text-3xl">{formatNumber(stats.totalCliques)}</span>
-              <span className="mt-1 text-xs text-muted-foreground md:text-sm">Usuarios Ativos</span>
+              <span className="mt-1 text-xs text-muted-foreground md:text-sm">Usuários Ativos</span>
             </div>
             <div className="flex flex-col items-center">
               <div className="flex items-center gap-1">

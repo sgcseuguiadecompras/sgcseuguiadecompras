@@ -117,7 +117,7 @@ export function ProductReviews({ product, reviews, supabaseProductId }: ProductR
   const [submitted, setSubmitted] = useState(false)
   const [form, setForm] = useState({
     nome_usuario: "",
-    email_usuario: "",
+    rede_social: "",
     nota: 5,
     comentario: "",
   })
@@ -144,13 +144,13 @@ export function ProductReviews({ product, reviews, supabaseProductId }: ProductR
       if (res.ok) {
         setSubmitted(true)
         setShowForm(false)
-        setForm({ nome_usuario: "", email_usuario: "", nota: 5, comentario: "" })
+        setForm({ nome_usuario: "", rede_social: "", nota: 5, comentario: "" })
       } else {
         const error = await res.json()
         alert("Erro: " + error.error)
       }
     } catch {
-      alert("Erro ao enviar avaliacao")
+      alert("Erro ao enviar avaliação")
     } finally {
       setSubmitting(false)
     }
@@ -174,7 +174,7 @@ export function ProductReviews({ product, reviews, supabaseProductId }: ProductR
         <div className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5 text-primary" />
           <h2 className="font-[family-name:var(--font-heading)] text-xl font-bold text-foreground md:text-2xl">
-            Avaliacoes
+            Avaliações
           </h2>
           <Badge variant="secondary">{product.reviewCount}</Badge>
         </div>
@@ -188,55 +188,57 @@ export function ProductReviews({ product, reviews, supabaseProductId }: ProductR
       {/* Mensagem de sucesso */}
       {submitted && (
         <div className="mt-4 rounded-lg bg-green-50 p-4 text-green-700">
-          Obrigado pela sua avaliacao! Ela sera publicada apos moderacao.
+          Obrigado pela sua avaliação! Ela será publicada após moderação.
         </div>
       )}
 
-      {/* Formulario de avaliacao */}
+      {/* Formulário de avaliação */}
       {showForm && supabaseProductId && (
         <form onSubmit={handleSubmit} className="mt-6 space-y-4 rounded-xl border border-border bg-card p-6">
-          <h4 className="font-semibold">Deixe sua avaliacao</h4>
+          <h4 className="font-semibold">Deixe sua avaliação</h4>
+          <p className="text-xs text-muted-foreground">
+            Se preferir não se identificar, aparecerá como &quot;Usuário SGC&quot;
+          </p>
           
           <div className="space-y-2">
-            <label className="text-sm font-medium">Sua nota</label>
+            <label className="text-sm font-medium">Sua nota *</label>
             {renderInteractiveStars(form.nota, (n) => setForm({ ...form, nota: n }))}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Seu comentário *</label>
+            <Textarea
+              value={form.comentario}
+              onChange={(e) => setForm({ ...form, comentario: e.target.value })}
+              placeholder="Conte sua experiência com o produto..."
+              rows={3}
+              required
+            />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Seu nome *</label>
+              <label className="text-sm font-medium">Seu nome (opcional)</label>
               <Input
                 value={form.nome_usuario}
                 onChange={(e) => setForm({ ...form, nome_usuario: e.target.value })}
-                placeholder="Joao Silva"
-                required
+                placeholder="João Silva"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Seu email (opcional)</label>
+              <label className="text-sm font-medium">Sua rede social (opcional)</label>
               <Input
-                type="email"
-                value={form.email_usuario}
-                onChange={(e) => setForm({ ...form, email_usuario: e.target.value })}
-                placeholder="joao@email.com"
+                value={form.rede_social}
+                onChange={(e) => setForm({ ...form, rede_social: e.target.value })}
+                placeholder="@seu_instagram"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Comentario (opcional)</label>
-            <Textarea
-              value={form.comentario}
-              onChange={(e) => setForm({ ...form, comentario: e.target.value })}
-              placeholder="Conte sua experiencia com o produto..."
-              rows={3}
-            />
-          </div>
-
           <div className="flex gap-2">
-            <Button type="submit" disabled={submitting} className="gap-2">
+            <Button type="submit" disabled={submitting || !form.comentario.trim()} className="gap-2">
               <Send className="h-4 w-4" />
-              {submitting ? "Enviando..." : "Enviar Avaliacao"}
+              {submitting ? "Enviando..." : "Enviar Avaliação"}
             </Button>
             <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
               Cancelar
@@ -261,7 +263,7 @@ export function ProductReviews({ product, reviews, supabaseProductId }: ProductR
               ))}
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Baseado em {product.reviewCount} avaliacoes
+              Baseado em {product.reviewCount} avaliações
             </p>
           </div>
 
@@ -280,10 +282,10 @@ export function ProductReviews({ product, reviews, supabaseProductId }: ProductR
             <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-12 text-center">
               <Star className="mb-3 h-10 w-10 text-primary/40" />
               <p className="text-sm font-medium text-foreground">Seja o primeiro a avaliar este produto!</p>
-              <p className="mt-1 text-xs text-muted-foreground">Sua opiniao ajuda outros compradores a tomar decisoes.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Sua opinião ajuda outros compradores a tomar decisões.</p>
               {supabaseProductId && !showForm && !submitted && (
                 <Button onClick={() => setShowForm(true)} variant="outline" size="sm" className="mt-4">
-                  Deixar Avaliacao
+                  Deixar Avaliação
                 </Button>
               )}
             </div>
