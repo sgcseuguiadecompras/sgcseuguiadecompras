@@ -22,14 +22,7 @@ export const metadata: Metadata = {
     description: 'Compre melhor, pague menos e evite golpes! Ofertas verificadas e cupons atualizados.',
     url: 'https://www.sgcseuguiadecompras.com.br',
     siteName: 'SGC - Seu Guia de Compras',
-    images: [
-      {
-        url: 'https://www.sgcseuguiadecompras.com.br/sgc-og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'SGC - Seu Guia de Compras',
-      },
-    ],
+    images: '/logo.png',
     locale: 'pt_BR',
     type: 'website',
   },
@@ -37,7 +30,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'SGC - Seu Guia de Compras',
     description: 'Compre melhor, pague menos e evite golpes! Ofertas verificadas e cupons atualizados.',
-    images: ['https://www.sgcseuguiadecompras.com.br/sgc-og-image.png'],
+    images: '/logo.png',
   },
 }
 
