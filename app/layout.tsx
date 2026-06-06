@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   title: 'SGC - Seu Guia de Compras',
   description: 'Compre melhor, pague menos e evite golpes! Ofertas verificadas e cupons atualizados.',
   keywords: ['compras online', 'cupons', 'ofertas', 'desconto', 'shopee', 'amazon', 'mercado livre', 'guia de compras'],
+  alternates: {
+    canonical: 'https://www.sgcseuguiadecompras.com.br',
+  },
   openGraph: {
     title: 'SGC - Seu Guia de Compras',
     description: 'Compre melhor, pague menos e evite golpes! Ofertas verificadas e cupons atualizados.',
