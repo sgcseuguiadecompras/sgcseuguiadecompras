@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://seuguiadecompras.com.br"
+  const baseUrl = "https://www.sgcseuguiadecompras.com.br"
   const categoryUrl = `${baseUrl}/categoria/${slug}`
   const description = `Encontre os melhores produtos de ${categoria.name} com as melhores ofertas e cupons de desconto.`
 

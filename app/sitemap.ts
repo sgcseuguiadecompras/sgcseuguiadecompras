@@ -48,7 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Buscar posts do blog publicados
   const { data: posts } = await supabase
-    .from('blog_posts')
+    .from('posts')
     .select('slug, updated_at')
     .eq('publicado', true)
     .order('updated_at', { ascending: false })

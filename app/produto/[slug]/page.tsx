@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = await supabaseProductRepository.findBySlugWithRelations(slug)
   if (!product) return { title: "Produto não encontrado" }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.sgcseuguiadecompras.com.br"
+  const baseUrl = "https://www.sgcseuguiadecompras.com.br"
   const productUrl = `${baseUrl}/produto/${slug}`
   const imageUrl = product.images?.[0] || `${baseUrl}/og-image.jpg`
   const description = product.shortDescription || product.description?.substring(0, 160) || ""

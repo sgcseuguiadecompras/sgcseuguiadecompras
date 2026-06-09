@@ -90,7 +90,7 @@ export function HeroSection() {
               size="lg"
               className="gap-2 px-8 text-base"
               onClick={() => {
-                const siteUrl = typeof window !== "undefined" ? window.location.origin : "https://sgcseuguiadecompras.com.br"
+                const siteUrl = "https://www.sgcseuguiadecompras.com.br"
                 if (navigator.share) {
                   navigator.share({
                     title: "SGC - Seu Guia de Compras",
