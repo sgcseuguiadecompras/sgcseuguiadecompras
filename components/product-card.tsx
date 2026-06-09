@@ -4,6 +4,8 @@ import Link from "next/link"
 import { Star, ExternalLink } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { SaveButton } from "@/components/save-button"
+import { formatPrice } from "@/lib/utils/format"
 import type { ProductWithRelations } from "@/lib/db"
 
 interface ProductCardProps {
@@ -12,6 +14,18 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const affiliateLink = product.activeLink?.url || "#"
+
+  const handleOfferClick = () => {
+    // Registrar clique no banco
+    fetch("/api/cliques", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        produto_id: product.id,
+        cupom_id: product.activeCoupon?.id || null,
+      }),
+    }).catch(() => {})
+  }
   
   // Obter a primeira imagem (compativel com string ou array)
   const getFirstImage = () => {
@@ -44,9 +58,12 @@ export function ProductCard({ product }: ProductCardProps) {
             -{product.discount}%
           </Badge>
         )}
-        <Badge variant="outline" className="absolute right-3 top-3 border-border bg-card/80 backdrop-blur-sm">
-          {product.store?.name || "Loja"}
-        </Badge>
+        <div className="absolute right-3 top-3 flex flex-col gap-2">
+          <SaveButton produtoId={product.id} lojaId={product.store?.id} />
+          <Badge variant="outline" className="border-border bg-card/80 backdrop-blur-sm">
+            {product.store?.name || "Loja"}
+          </Badge>
+        </div>
       </div>
 
       {/* Content */}
@@ -80,11 +97,11 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Price */}
         <div className="mt-3 flex items-end gap-2">
           <span className="text-lg font-bold text-foreground">
-            R$ {(product.currentPrice || 0).toFixed(2).replace(".", ",")}
+            {formatPrice(product.currentPrice)}
           </span>
           {product.originalPrice && (
             <span className="text-xs text-muted-foreground line-through">
-              R$ {product.originalPrice.toFixed(2).replace(".", ",")}
+              {formatPrice(product.originalPrice)}
             </span>
           )}
         </div>
@@ -100,12 +117,13 @@ export function ProductCard({ product }: ProductCardProps) {
             size="sm"
             className="flex-1 gap-1"
             variant="default"
-            asChild
+            onClick={(e) => {
+              handleOfferClick()
+              window.open(affiliateLink, "_blank", "noopener,noreferrer")
+            }}
           >
-            <a href={affiliateLink} target="_blank" rel="noopener noreferrer">
-              Ver Oferta
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+            Ver Oferta
+            <ExternalLink className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>

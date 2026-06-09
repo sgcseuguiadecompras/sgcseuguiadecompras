@@ -5,6 +5,7 @@ interface CategoriaSupabase {
   id: string
   nome: string
   slug: string
+  icone: string | null
 }
 
 // Mapeamento de categorias para ícones
@@ -25,7 +26,9 @@ function mapCategoriaToCategory(categoria: CategoriaSupabase, productCount: numb
     id: categoria.id,
     name: categoria.nome,
     slug: categoria.slug,
+    // Usar icone do banco ou fallback para o mapeamento por slug ou icone padrao
     icon: categoryIcons[categoria.slug] || 'Package',
+    imageUrl: categoria.icone || undefined, // URL do icone personalizado
     productCount,
     isActive: true,
     sortOrder: 0,

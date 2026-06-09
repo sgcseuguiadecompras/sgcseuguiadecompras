@@ -3,21 +3,25 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useState } from "react"
-import { Menu, Search, Moon, Sun } from "lucide-react"
+import { Menu, Search, Moon, Sun, Heart } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
+import { useSalvosContext } from "@/contexts/salvos-context"
 
 const navLinks = [
   { href: "/", label: "Inicio" },
   { href: "/#categorias", label: "Categorias" },
   { href: "/#produtos", label: "Produtos" },
   { href: "/cupons", label: "Cupons" },
+  { href: "/blog", label: "Blog" },
+  { href: "/salvos", label: "Salvos" },
 ]
 
 export function SiteHeader() {
   const { theme, setTheme } = useTheme()
   const [open, setOpen] = useState(false)
+  const { totalSalvos } = useSalvosContext()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
@@ -72,6 +76,23 @@ export function SiteHeader() {
           >
             <Link href="/busca">
               <Search className="h-4 w-4" />
+            </Link>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative h-9 w-9 text-muted-foreground"
+            aria-label="Produtos salvos"
+            asChild
+          >
+            <Link href="/salvos">
+              <Heart className="h-4 w-4" />
+              {totalSalvos > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                  {totalSalvos > 9 ? "9+" : totalSalvos}
+                </span>
+              )}
             </Link>
           </Button>
 

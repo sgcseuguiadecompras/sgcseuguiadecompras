@@ -31,7 +31,9 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Pencil, Trash2, Plus, LogOut, Package, Tag, Store, Home, Ticket } from "lucide-react"
+import { Pencil, Trash2, Plus, LogOut, Package, Tag, Store, Home, Ticket, MessageSquare, Palette, Share2, ChevronUp, ChevronDown, Star, Check, X, FileText, Eye, EyeOff, Settings } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
+import { formatPrice, parsePrice, formatPriceForInput } from "@/lib/utils/format"
 
 interface Loja {
   id: string
@@ -44,20 +46,26 @@ interface Cupom {
   codigo: string
   descricao: string
   validade: string | null
+  link: string | null
+  loja_id: string | null
+  lojas: Loja | null
 }
 
 interface Categoria {
   id: string
   nome: string
   slug: string
+  icone: string | null
 }
 
 interface Produto {
   id: string
   nome: string
+  slug: string | null
   descricao: string
   imagem: string[] | string | null
   preco: number
+  preco_original: number | null
   avaliacao: number
   loja_id: string | null
   cupom_id: string | null
@@ -67,11 +75,81 @@ interface Produto {
   categorias: Categoria[]
 }
 
+interface Feedback {
+  id: number
+  mensagem: string
+  usuario_id: string | null
+  created_at: string
+}
+
+interface Tema {
+  cor_primaria: string
+  cor_secundaria: string
+  cor_destaque: string
+  cor_fundo: string
+  cor_texto: string
+  cor_texto_secundario: string
+  fonte_padrao: string
+  layout_produtos: string
+  border_radius: string
+  espacamento: string
+  sombras: boolean
+  animacoes: boolean
+  modo_escuro: boolean
+  logo_url: string
+  favicon_url: string
+  banner_url: string
+  meta_titulo: string
+  meta_descricao: string
+  google_analytics_id: string
+  facebook_pixel_id: string
+}
+
+interface RedeSocial {
+  id: string
+  nome: string
+  icone: string
+  url: string
+  posicao: string
+  ativo: boolean
+  ordem: number
+}
+
+interface Avaliacao {
+  id: string
+  produto_id: string
+  nome_usuario: string
+  email_usuario: string | null
+  nota: number
+  comentario: string | null
+  aprovado: boolean
+  created_at: string
+  produtos?: { id: string; nome: string }
+}
+
+interface Post {
+  id: string
+  titulo: string
+  slug: string
+  resumo: string | null
+  conteudo: string
+  imagem_capa: string | null
+  autor: string
+  categoria: string
+  tags: string[] | null
+  publicado: boolean
+  destaque: boolean
+  views: number
+  created_at: string
+}
+
 const emptyProduto = {
   nome: "",
+  slug: "",
   descricao: "",
   imagens: [""] as string[],
-  preco: 0,
+  preco: "",
+  preco_original: "",
   avaliacao: 0,
   loja_id: "",
   cupom_id: "",
@@ -79,9 +157,11 @@ const emptyProduto = {
   categoria_ids: [] as string[],
 }
 
-const emptyCategoria = { nome: "" }
+const emptyCategoria = { nome: "", icone: "" }
 const emptyLoja = { nome: "", icone: "" }
-const emptyCupom = { codigo: "", descricao: "", validade: "" }
+const emptyCupom = { codigo: "", descricao: "", validade: "", link: "", loja_id: "" }
+const emptyRedeSocial = { nome: "", icone: "", url: "", posicao: "rodape", ativo: true, ordem: 0 }
+const emptyPost = { titulo: "", slug: "", resumo: "", conteudo: "", imagem_capa: "", autor: "SGC", categoria: "Guia de Compra", tags: "", publicado: false, destaque: false }
 
 export default function AdminPage() {
   const router = useRouter()
@@ -89,6 +169,37 @@ export default function AdminPage() {
   const [lojas, setLojas] = useState<Loja[]>([])
   const [cupons, setCupons] = useState<Cupom[]>([])
   const [categorias, setCategorias] = useState<Categoria[]>([])
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([])
+  const [redesSociais, setRedesSociais] = useState<RedeSocial[]>([])
+  const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([])
+  const [posts, setPosts] = useState<Post[]>([])
+  const [configSite, setConfigSite] = useState({
+    mensagem_compartilhar: "Confira as melhores ofertas e cupons no SGC - Seu Guia de Compras!",
+  })
+  const [configSaving, setConfigSaving] = useState(false)
+  const [tema, setTema] = useState<Tema>({
+    cor_primaria: "#000000",
+    cor_secundaria: "#6B7280",
+    cor_destaque: "#10B981",
+    cor_fundo: "#FFFFFF",
+    cor_texto: "#111827",
+    cor_texto_secundario: "#6B7280",
+    fonte_padrao: "Inter",
+    layout_produtos: "grid",
+    border_radius: "0.5rem",
+    espacamento: "normal",
+    sombras: true,
+    animacoes: true,
+    modo_escuro: false,
+    logo_url: "",
+    favicon_url: "",
+    banner_url: "",
+    meta_titulo: "SGC - Seu Guia de Compras",
+    meta_descricao: "Compre melhor, pague menos e evite golpes!",
+    google_analytics_id: "",
+    facebook_pixel_id: "",
+  })
+  const [temaSaving, setTemaSaving] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   
@@ -97,18 +208,24 @@ export default function AdminPage() {
   const [categoriaDialogOpen, setCategoriaDialogOpen] = useState(false)
   const [lojaDialogOpen, setLojaDialogOpen] = useState(false)
   const [cupomDialogOpen, setCupomDialogOpen] = useState(false)
+  const [redeDialogOpen, setRedeDialogOpen] = useState(false)
+  const [postDialogOpen, setPostDialogOpen] = useState(false)
   
   // Editing IDs
   const [editingProdutoId, setEditingProdutoId] = useState<string | null>(null)
   const [editingCategoriaId, setEditingCategoriaId] = useState<string | null>(null)
   const [editingLojaId, setEditingLojaId] = useState<string | null>(null)
   const [editingCupomId, setEditingCupomId] = useState<string | null>(null)
+  const [editingRedeId, setEditingRedeId] = useState<string | null>(null)
+  const [editingPostId, setEditingPostId] = useState<string | null>(null)
   
   // Forms
   const [produtoForm, setProdutoForm] = useState(emptyProduto)
   const [categoriaForm, setCategoriaForm] = useState(emptyCategoria)
   const [lojaForm, setLojaForm] = useState(emptyLoja)
   const [cupomForm, setCupomForm] = useState(emptyCupom)
+  const [redeForm, setRedeForm] = useState(emptyRedeSocial)
+  const [postForm, setPostForm] = useState(emptyPost)
 
   useEffect(() => {
     loadData()
@@ -116,11 +233,16 @@ export default function AdminPage() {
 
   async function loadData() {
     try {
-      const [produtosRes, lojasRes, cuponsRes, categoriasRes] = await Promise.all([
+      const [produtosRes, lojasRes, cuponsRes, categoriasRes, feedbacksRes, temaRes, redesRes, avaliacoesRes, postsRes] = await Promise.all([
         fetch("/api/admin/produtos"),
         fetch("/api/admin/lojas"),
         fetch("/api/admin/cupons"),
         fetch("/api/admin/categorias"),
+        fetch("/api/feedbacks"),
+        fetch("/api/admin/tema"),
+        fetch("/api/admin/redes-sociais"),
+        fetch("/api/admin/avaliacoes"),
+        fetch("/api/admin/posts"),
       ])
 
       if (produtosRes.status === 401) {
@@ -128,17 +250,44 @@ export default function AdminPage() {
         return
       }
 
-      const [produtosData, lojasData, cuponsData, categoriasData] = await Promise.all([
+      const [produtosData, lojasData, cuponsData, categoriasData, feedbacksData, temaData, redesData, avaliacoesData, postsData] = await Promise.all([
         produtosRes.json(),
         lojasRes.json(),
         cuponsRes.json(),
         categoriasRes.json(),
+        feedbacksRes.json(),
+        temaRes.json(),
+        redesRes.json(),
+        avaliacoesRes.json(),
+        postsRes.json(),
       ])
 
       setProdutos(produtosData)
       setLojas(lojasData)
       setCupons(cuponsData)
       setCategorias(categoriasData)
+      setFeedbacks(Array.isArray(feedbacksData) ? feedbacksData : [])
+      if (temaData) setTema(temaData)
+      setRedesSociais(Array.isArray(redesData) ? redesData : [])
+      setAvaliacoes(Array.isArray(avaliacoesData) ? avaliacoesData : [])
+      setPosts(Array.isArray(postsData) ? postsData : [])
+
+      // Carregar configurações do site
+      try {
+        const configRes = await fetch("/api/admin/config")
+        if (configRes.ok) {
+          const configData = await configRes.json()
+          if (Array.isArray(configData)) {
+            const configObj: Record<string, string> = {}
+            configData.forEach((c: { chave: string; valor: string }) => {
+              configObj[c.chave] = c.valor
+            })
+            setConfigSite({
+              mensagem_compartilhar: configObj.mensagem_compartilhar || "Confira as melhores ofertas e cupons no SGC - Seu Guia de Compras!",
+            })
+          }
+        }
+      } catch {}
     } catch (error) {
       console.error("Erro ao carregar dados:", error)
     } finally {
@@ -149,6 +298,27 @@ export default function AdminPage() {
   async function handleLogout() {
     await fetch("/api/admin/auth", { method: "DELETE" })
     router.push("/admin/login")
+  }
+
+  // Config handlers
+  async function handleSaveConfig() {
+    setConfigSaving(true)
+    try {
+      await fetch("/api/admin/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chave: "mensagem_compartilhar",
+          valor: configSite.mensagem_compartilhar,
+          descricao: "Mensagem exibida ao compartilhar o site",
+        }),
+      })
+      alert("Configuracoes salvas com sucesso!")
+    } catch {
+      alert("Erro ao salvar configuracoes")
+    } finally {
+      setConfigSaving(false)
+    }
   }
 
   // Produto handlers
@@ -169,9 +339,11 @@ export default function AdminPage() {
     }
     setProdutoForm({
       nome: produto.nome,
+      slug: produto.slug || "",
       descricao: produto.descricao || "",
       imagens,
-      preco: produto.preco,
+      preco: formatPriceForInput(produto.preco),
+      preco_original: formatPriceForInput(produto.preco_original),
       avaliacao: produto.avaliacao || 0,
       loja_id: produto.loja_id || "",
       cupom_id: produto.cupom_id || "",
@@ -198,7 +370,8 @@ export default function AdminPage() {
         body: JSON.stringify({
           ...produtoForm,
           imagem: imagensFiltradas,
-          preco: Number(produtoForm.preco),
+          preco: parsePrice(produtoForm.preco),
+          preco_original: produtoForm.preco_original ? parsePrice(produtoForm.preco_original) : null,
           avaliacao: Number(produtoForm.avaliacao),
           loja_id: produtoForm.loja_id || null,
           cupom_id: produtoForm.cupom_id || null,
@@ -246,7 +419,7 @@ export default function AdminPage() {
 
   function openEditCategoriaDialog(categoria: Categoria) {
     setEditingCategoriaId(categoria.id)
-    setCategoriaForm({ nome: categoria.nome })
+    setCategoriaForm({ nome: categoria.nome, icone: categoria.icone || "" })
     setCategoriaDialogOpen(true)
   }
 
@@ -368,6 +541,8 @@ export default function AdminPage() {
       codigo: cupom.codigo,
       descricao: cupom.descricao || "",
       validade: cupom.validade ? cupom.validade.split("T")[0] : "",
+      link: cupom.link || "",
+      loja_id: cupom.loja_id || "",
     })
     setCupomDialogOpen(true)
   }
@@ -386,6 +561,8 @@ export default function AdminPage() {
         body: JSON.stringify({
           ...cupomForm,
           validade: cupomForm.validade || null,
+          link: cupomForm.link || null,
+          loja_id: cupomForm.loja_id || null,
         }),
       })
 
@@ -418,6 +595,240 @@ export default function AdminPage() {
     } catch (error) {
       console.error("Erro ao excluir:", error)
       alert("Erro ao excluir cupom")
+    }
+  }
+
+  async function handleSaveTema() {
+    setTemaSaving(true)
+    try {
+      const res = await fetch("/api/admin/tema", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(tema),
+      })
+
+      if (res.ok) {
+        alert("Tema salvo com sucesso!")
+      } else {
+        const error = await res.json()
+        alert("Erro: " + error.error)
+      }
+    } catch (error) {
+      console.error("Erro ao salvar tema:", error)
+      alert("Erro ao salvar tema")
+    } finally {
+      setTemaSaving(false)
+    }
+  }
+
+  // Rede Social handlers
+  function openNewRedeDialog() {
+    setEditingRedeId(null)
+    setRedeForm(emptyRedeSocial)
+    setRedeDialogOpen(true)
+  }
+
+  function openEditRedeDialog(rede: RedeSocial) {
+    setEditingRedeId(rede.id)
+    setRedeForm({
+      nome: rede.nome,
+      icone: rede.icone,
+      url: rede.url,
+      posicao: rede.posicao,
+      ativo: rede.ativo,
+      ordem: rede.ordem,
+    })
+    setRedeDialogOpen(true)
+  }
+
+  async function handleSaveRede() {
+    setSaving(true)
+    try {
+      const url = editingRedeId
+        ? `/api/admin/redes-sociais/${editingRedeId}`
+        : "/api/admin/redes-sociais"
+      const method = editingRedeId ? "PUT" : "POST"
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(redeForm),
+      })
+
+      if (res.ok) {
+        setRedeDialogOpen(false)
+        loadData()
+      } else {
+        const error = await res.json()
+        alert("Erro: " + error.error)
+      }
+    } catch (error) {
+      console.error("Erro ao salvar:", error)
+      alert("Erro ao salvar rede social")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleDeleteRede(id: string) {
+    if (!confirm("Tem certeza que deseja excluir esta rede social?")) return
+
+    try {
+      const res = await fetch(`/api/admin/redes-sociais/${id}`, { method: "DELETE" })
+      if (res.ok) {
+        loadData()
+      } else {
+        const error = await res.json()
+        alert("Erro: " + error.error)
+      }
+    } catch (error) {
+      console.error("Erro ao excluir:", error)
+      alert("Erro ao excluir rede social")
+    }
+  }
+
+  async function moveRede(id: string, direction: "up" | "down") {
+    const index = redesSociais.findIndex(r => r.id === id)
+    if (index === -1) return
+    if (direction === "up" && index === 0) return
+    if (direction === "down" && index === redesSociais.length - 1) return
+
+    const newOrder = [...redesSociais]
+    const swapIndex = direction === "up" ? index - 1 : index + 1
+    
+    // Swap orders
+    const tempOrdem = newOrder[index].ordem
+    newOrder[index].ordem = newOrder[swapIndex].ordem
+    newOrder[swapIndex].ordem = tempOrdem
+
+    // Update both items
+    try {
+      await Promise.all([
+        fetch(`/api/admin/redes-sociais/${newOrder[index].id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newOrder[index]),
+        }),
+        fetch(`/api/admin/redes-sociais/${newOrder[swapIndex].id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newOrder[swapIndex]),
+        }),
+      ])
+      loadData()
+    } catch (error) {
+      console.error("Erro ao reordenar:", error)
+    }
+  }
+
+  // Avaliacao handlers
+  async function handleAprovarAvaliacao(id: string, aprovado: boolean) {
+    try {
+      const res = await fetch(`/api/admin/avaliacoes/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ aprovado }),
+      })
+      if (res.ok) {
+        loadData()
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar avaliacao:", error)
+    }
+  }
+
+  async function handleDeleteAvaliacao(id: string) {
+    if (!confirm("Tem certeza que deseja excluir esta avaliacao?")) return
+    try {
+      const res = await fetch(`/api/admin/avaliacoes/${id}`, { method: "DELETE" })
+      if (res.ok) {
+        loadData()
+      }
+    } catch (error) {
+      console.error("Erro ao excluir avaliacao:", error)
+    }
+  }
+
+  // Post handlers
+  function openNewPostDialog() {
+    setEditingPostId(null)
+    setPostForm(emptyPost)
+    setPostDialogOpen(true)
+  }
+
+  function openEditPostDialog(post: Post) {
+    setEditingPostId(post.id)
+    setPostForm({
+      titulo: post.titulo,
+      slug: post.slug,
+      resumo: post.resumo || "",
+      conteudo: post.conteudo,
+      imagem_capa: post.imagem_capa || "",
+      autor: post.autor,
+      categoria: post.categoria,
+      tags: post.tags?.join(", ") || "",
+      publicado: post.publicado,
+      destaque: post.destaque,
+    })
+    setPostDialogOpen(true)
+  }
+
+  async function handleSavePost() {
+    setSaving(true)
+    try {
+      const url = editingPostId ? `/api/admin/posts/${editingPostId}` : "/api/admin/posts"
+      const method = editingPostId ? "PUT" : "POST"
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...postForm,
+          tags: postForm.tags ? postForm.tags.split(",").map(t => t.trim()).filter(Boolean) : [],
+        }),
+      })
+
+      if (res.ok) {
+        setPostDialogOpen(false)
+        loadData()
+      } else {
+        const error = await res.json()
+        alert("Erro: " + error.error)
+      }
+    } catch (error) {
+      console.error("Erro ao salvar:", error)
+      alert("Erro ao salvar post")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleDeletePost(id: string) {
+    if (!confirm("Tem certeza que deseja excluir este post?")) return
+    try {
+      const res = await fetch(`/api/admin/posts/${id}`, { method: "DELETE" })
+      if (res.ok) {
+        loadData()
+      } else {
+        const error = await res.json()
+        alert("Erro: " + error.error)
+      }
+    } catch (error) {
+      console.error("Erro ao excluir:", error)
+      alert("Erro ao excluir post")
+    }
+  }
+
+  async function togglePostPublicado(post: Post) {
+    try {
+      await fetch(`/api/admin/posts/${post.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...post, publicado: !post.publicado }),
+      })
+      loadData()
+    } catch (error) {
+      console.error("Erro ao atualizar post:", error)
     }
   }
 
@@ -471,11 +882,25 @@ export default function AdminPage() {
             </Link>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/" target="_blank">
-                <Home className="mr-2 h-4 w-4" />
-                Ver Site
-              </Link>
+            <Button variant="ghost" size="sm" asChild>
+              <a href="/" target="_blank" rel="noopener noreferrer">
+                Inicio
+              </a>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <a href="/#categorias" target="_blank" rel="noopener noreferrer">
+                Categorias
+              </a>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <a href="/#produtos" target="_blank" rel="noopener noreferrer">
+                Produtos
+              </a>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <a href="/#cupons" target="_blank" rel="noopener noreferrer">
+                Cupons
+              </a>
             </Button>
             <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
@@ -502,6 +927,30 @@ export default function AdminPage() {
               <Ticket className="h-4 w-4" />
               Cupons
             </TabsTrigger>
+            <TabsTrigger value="feedbacks" className="gap-2">
+              <MessageSquare className="h-4 w-4" />
+              Feedbacks
+            </TabsTrigger>
+            <TabsTrigger value="tema" className="gap-2">
+              <Palette className="h-4 w-4" />
+              Tema
+            </TabsTrigger>
+            <TabsTrigger value="redes" className="gap-2">
+              <Share2 className="h-4 w-4" />
+              Redes Sociais
+            </TabsTrigger>
+            <TabsTrigger value="avaliacoes" className="gap-2">
+              <Star className="h-4 w-4" />
+              Avaliacoes
+            </TabsTrigger>
+            <TabsTrigger value="blog" className="gap-2">
+              <FileText className="h-4 w-4" />
+              Blog
+            </TabsTrigger>
+            <TabsTrigger value="config" className="gap-2">
+              <Settings className="h-4 w-4" />
+              Config
+            </TabsTrigger>
           </TabsList>
 
           {/* Produtos Tab */}
@@ -520,9 +969,9 @@ export default function AdminPage() {
                     Nenhum produto cadastrado.
                   </p>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div className="max-h-[500px] overflow-y-auto overflow-x-auto">
                     <Table>
-                      <TableHeader>
+                      <TableHeader className="sticky top-0 bg-background z-10">
                         <TableRow>
                           <TableHead>Nome</TableHead>
                           <TableHead>Preco</TableHead>
@@ -535,7 +984,7 @@ export default function AdminPage() {
                         {produtos.map((produto) => (
                           <TableRow key={produto.id}>
                             <TableCell className="font-medium">{produto.nome}</TableCell>
-                            <TableCell>R$ {Number(produto.preco).toFixed(2)}</TableCell>
+                            <TableCell>{formatPrice(Number(produto.preco))}</TableCell>
                             <TableCell>{produto.lojas?.nome || "-"}</TableCell>
                             <TableCell>
                               {produto.categorias?.map(c => c.nome).join(", ") || "-"}
@@ -576,9 +1025,9 @@ export default function AdminPage() {
                     Nenhuma categoria cadastrada.
                   </p>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div className="max-h-[500px] overflow-y-auto overflow-x-auto">
                     <Table>
-                      <TableHeader>
+                      <TableHeader className="sticky top-0 bg-background z-10">
                         <TableRow>
                           <TableHead>Nome</TableHead>
                           <TableHead>Slug</TableHead>
@@ -626,9 +1075,9 @@ export default function AdminPage() {
                     Nenhuma loja cadastrada.
                   </p>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div className="max-h-[500px] overflow-y-auto overflow-x-auto">
                     <Table>
-                      <TableHeader>
+                      <TableHeader className="sticky top-0 bg-background z-10">
                         <TableRow>
                           <TableHead>Nome</TableHead>
                           <TableHead>Icone</TableHead>
@@ -680,9 +1129,9 @@ export default function AdminPage() {
                     Nenhum cupom cadastrado.
                   </p>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div className="max-h-[500px] overflow-y-auto overflow-x-auto">
                     <Table>
-                      <TableHeader>
+                      <TableHeader className="sticky top-0 bg-background z-10">
                         <TableRow>
                           <TableHead>Codigo</TableHead>
                           <TableHead>Descricao</TableHead>
@@ -719,6 +1168,537 @@ export default function AdminPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Feedbacks Tab */}
+          <TabsContent value="feedbacks">
+            <Card>
+              <CardHeader>
+                <CardTitle>Feedbacks e Sugestões ({feedbacks.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {feedbacks.length === 0 ? (
+                  <p className="py-8 text-center text-muted-foreground">
+                    Nenhum feedback recebido ainda.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {feedbacks.map((feedback) => (
+                      <div
+                        key={feedback.id}
+                        className="rounded-lg border border-border bg-muted/30 p-4"
+                      >
+                        <p className="whitespace-pre-line text-sm text-foreground">
+                          {feedback.mensagem}
+                        </p>
+                        <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
+                          <span>
+                            {new Date(feedback.created_at).toLocaleDateString("pt-BR", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                          {feedback.usuario_id && (
+                            <span className="truncate max-w-[200px]">
+                              ID: {feedback.usuario_id.slice(0, 20)}...
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tema Tab */}
+          <TabsContent value="tema">
+            <Card>
+              <CardHeader>
+                <CardTitle>Configuracoes de Tema</CardTitle>
+              </CardHeader>
+              <CardContent className="max-h-[600px] overflow-y-auto space-y-8">
+                {/* Secao: Cores */}
+                <div>
+                  <h3 className="mb-4 text-lg font-semibold border-b pb-2">Cores</h3>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label>Cor Primaria</Label>
+                      <div className="flex items-center gap-2">
+                        <input type="color" value={tema.cor_primaria} onChange={(e) => setTema({ ...tema, cor_primaria: e.target.value })} className="h-10 w-14 cursor-pointer rounded border" />
+                        <Input value={tema.cor_primaria} onChange={(e) => setTema({ ...tema, cor_primaria: e.target.value })} className="flex-1" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Cor Secundaria</Label>
+                      <div className="flex items-center gap-2">
+                        <input type="color" value={tema.cor_secundaria} onChange={(e) => setTema({ ...tema, cor_secundaria: e.target.value })} className="h-10 w-14 cursor-pointer rounded border" />
+                        <Input value={tema.cor_secundaria} onChange={(e) => setTema({ ...tema, cor_secundaria: e.target.value })} className="flex-1" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Cor Destaque</Label>
+                      <div className="flex items-center gap-2">
+                        <input type="color" value={tema.cor_destaque} onChange={(e) => setTema({ ...tema, cor_destaque: e.target.value })} className="h-10 w-14 cursor-pointer rounded border" />
+                        <Input value={tema.cor_destaque} onChange={(e) => setTema({ ...tema, cor_destaque: e.target.value })} className="flex-1" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Cor de Fundo</Label>
+                      <div className="flex items-center gap-2">
+                        <input type="color" value={tema.cor_fundo} onChange={(e) => setTema({ ...tema, cor_fundo: e.target.value })} className="h-10 w-14 cursor-pointer rounded border" />
+                        <Input value={tema.cor_fundo} onChange={(e) => setTema({ ...tema, cor_fundo: e.target.value })} className="flex-1" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Cor do Texto</Label>
+                      <div className="flex items-center gap-2">
+                        <input type="color" value={tema.cor_texto} onChange={(e) => setTema({ ...tema, cor_texto: e.target.value })} className="h-10 w-14 cursor-pointer rounded border" />
+                        <Input value={tema.cor_texto} onChange={(e) => setTema({ ...tema, cor_texto: e.target.value })} className="flex-1" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Cor Texto Secundario</Label>
+                      <div className="flex items-center gap-2">
+                        <input type="color" value={tema.cor_texto_secundario} onChange={(e) => setTema({ ...tema, cor_texto_secundario: e.target.value })} className="h-10 w-14 cursor-pointer rounded border" />
+                        <Input value={tema.cor_texto_secundario} onChange={(e) => setTema({ ...tema, cor_texto_secundario: e.target.value })} className="flex-1" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Secao: Tipografia e Layout */}
+                <div>
+                  <h3 className="mb-4 text-lg font-semibold border-b pb-2">Tipografia e Layout</h3>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Fonte Padrao</Label>
+                      <Select value={tema.fonte_padrao} onValueChange={(value) => setTema({ ...tema, fonte_padrao: value })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Inter">Inter</SelectItem>
+                          <SelectItem value="DM Sans">DM Sans</SelectItem>
+                          <SelectItem value="Roboto">Roboto</SelectItem>
+                          <SelectItem value="Open Sans">Open Sans</SelectItem>
+                          <SelectItem value="Poppins">Poppins</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Layout de Produtos</Label>
+                      <Select value={tema.layout_produtos} onValueChange={(value) => setTema({ ...tema, layout_produtos: value })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="grid">Grade (Grid)</SelectItem>
+                          <SelectItem value="list">Lista</SelectItem>
+                          <SelectItem value="carousel">Carrossel</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Border Radius</Label>
+                      <Select value={tema.border_radius} onValueChange={(value) => setTema({ ...tema, border_radius: value })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">Sem arredondamento</SelectItem>
+                          <SelectItem value="0.25rem">Pequeno</SelectItem>
+                          <SelectItem value="0.5rem">Medio</SelectItem>
+                          <SelectItem value="1rem">Grande</SelectItem>
+                          <SelectItem value="9999px">Circular</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Espacamento</Label>
+                      <Select value={tema.espacamento} onValueChange={(value) => setTema({ ...tema, espacamento: value })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="compact">Compacto</SelectItem>
+                          <SelectItem value="normal">Normal</SelectItem>
+                          <SelectItem value="relaxed">Relaxado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Secao: Efeitos */}
+                <div>
+                  <h3 className="mb-4 text-lg font-semibold border-b pb-2">Efeitos</h3>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="flex items-center gap-3">
+                      <Switch checked={tema.sombras} onCheckedChange={(checked) => setTema({ ...tema, sombras: checked })} />
+                      <Label>Sombras</Label>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Switch checked={tema.animacoes} onCheckedChange={(checked) => setTema({ ...tema, animacoes: checked })} />
+                      <Label>Animacoes</Label>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Switch checked={tema.modo_escuro} onCheckedChange={(checked) => setTema({ ...tema, modo_escuro: checked })} />
+                      <Label>Modo Escuro</Label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Secao: Identidade Visual */}
+                <div>
+                  <h3 className="mb-4 text-lg font-semibold border-b pb-2">Identidade Visual</h3>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label>Logo (URL)</Label>
+                      <Input value={tema.logo_url} onChange={(e) => setTema({ ...tema, logo_url: e.target.value })} placeholder="https://..." />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Favicon (URL)</Label>
+                      <Input value={tema.favicon_url} onChange={(e) => setTema({ ...tema, favicon_url: e.target.value })} placeholder="https://..." />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Banner Hero (URL)</Label>
+                      <Input value={tema.banner_url} onChange={(e) => setTema({ ...tema, banner_url: e.target.value })} placeholder="https://..." />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Secao: SEO e Tracking */}
+                <div>
+                  <h3 className="mb-4 text-lg font-semibold border-b pb-2">SEO e Tracking</h3>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Titulo do Site (Meta Title)</Label>
+                      <Input value={tema.meta_titulo} onChange={(e) => setTema({ ...tema, meta_titulo: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Descricao do Site (Meta Description)</Label>
+                      <Input value={tema.meta_descricao} onChange={(e) => setTema({ ...tema, meta_descricao: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Google Analytics ID</Label>
+                      <Input value={tema.google_analytics_id} onChange={(e) => setTema({ ...tema, google_analytics_id: e.target.value })} placeholder="G-XXXXXXXXXX" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Facebook Pixel ID</Label>
+                      <Input value={tema.facebook_pixel_id} onChange={(e) => setTema({ ...tema, facebook_pixel_id: e.target.value })} placeholder="123456789" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preview */}
+                <div className="rounded-lg border p-4">
+                  <h4 className="mb-3 text-sm font-medium">Pre-visualizacao</h4>
+                  <div className="rounded-lg p-4" style={{ backgroundColor: tema.cor_fundo, borderRadius: tema.border_radius }}>
+                    <div className="inline-block rounded px-4 py-2 text-white" style={{ backgroundColor: tema.cor_primaria, fontFamily: tema.fonte_padrao, borderRadius: tema.border_radius }}>
+                      Botao Primario
+                    </div>
+                    <div className="ml-2 inline-block rounded px-4 py-2" style={{ backgroundColor: tema.cor_secundaria, color: "#fff", fontFamily: tema.fonte_padrao, borderRadius: tema.border_radius }}>
+                      Botao Secundario
+                    </div>
+                    <div className="ml-2 inline-block rounded px-4 py-2" style={{ backgroundColor: tema.cor_destaque, color: "#fff", fontFamily: tema.fonte_padrao, borderRadius: tema.border_radius }}>
+                      Destaque
+                    </div>
+                    <p className="mt-3" style={{ color: tema.cor_texto, fontFamily: tema.fonte_padrao }}>
+                      Texto principal com a fonte {tema.fonte_padrao}
+                    </p>
+                    <p className="mt-1 text-sm" style={{ color: tema.cor_texto_secundario, fontFamily: tema.fonte_padrao }}>
+                      Texto secundario para descricoes
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-4">
+                  <Button onClick={handleSaveTema} disabled={temaSaving}>
+                    {temaSaving ? "Salvando..." : "Salvar Configuracoes"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Redes Sociais Tab */}
+          <TabsContent value="redes">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Redes Sociais ({redesSociais.length})</CardTitle>
+                <Button onClick={openNewRedeDialog} size="sm" className="gap-1">
+                  <Plus className="h-4 w-4" />
+                  Adicionar
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {redesSociais.length === 0 ? (
+                  <p className="py-8 text-center text-muted-foreground">
+                    Nenhuma rede social cadastrada.
+                  </p>
+                ) : (
+                  <div className="max-h-[400px] overflow-y-auto">
+                    <Table>
+                      <TableHeader className="sticky top-0 bg-background z-10">
+                        <TableRow>
+                          <TableHead>Ordem</TableHead>
+                          <TableHead>Nome</TableHead>
+                          <TableHead>Icone</TableHead>
+                          <TableHead>Posicao</TableHead>
+                          <TableHead>Ativo</TableHead>
+                          <TableHead className="text-right">Acoes</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {redesSociais.map((rede, index) => (
+                          <TableRow key={rede.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => moveRede(rede.id, "up")}
+                                  disabled={index === 0}
+                                >
+                                  <ChevronUp className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  onClick={() => moveRede(rede.id, "down")}
+                                  disabled={index === redesSociais.length - 1}
+                                >
+                                  <ChevronDown className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-medium">{rede.nome}</TableCell>
+                            <TableCell>
+                              {rede.icone?.startsWith("http") ? (
+                                <img src={rede.icone} alt={rede.nome} className="h-6 w-6" />
+                              ) : (
+                                <span className="text-sm text-muted-foreground">{rede.icone}</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <span className="rounded bg-muted px-2 py-1 text-xs capitalize">
+                                {rede.posicao}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <span className={`rounded px-2 py-1 text-xs ${rede.ativo ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                                {rede.ativo ? "Sim" : "Nao"}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-1">
+                                <Button variant="ghost" size="icon" onClick={() => openEditRedeDialog(rede)}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleDeleteRede(rede.id)}>
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Avaliacoes Tab */}
+          <TabsContent value="avaliacoes">
+            <Card>
+              <CardHeader>
+                <CardTitle>Moderacao de Avaliacoes ({avaliacoes.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {avaliacoes.length === 0 ? (
+                  <p className="py-8 text-center text-muted-foreground">
+                    Nenhuma avaliacao para moderar.
+                  </p>
+                ) : (
+                  <div className="max-h-[500px] overflow-y-auto space-y-4">
+                    {avaliacoes.map((avaliacao) => (
+                      <div key={avaliacao.id} className={`rounded-lg border p-4 ${avaliacao.aprovado ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{avaliacao.nome_usuario}</span>
+                              <div className="flex gap-0.5">
+                                {[1, 2, 3, 4, 5].map((n) => (
+                                  <Star key={n} className={`h-4 w-4 ${n <= avaliacao.nota ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
+                                ))}
+                              </div>
+                              <span className={`text-xs px-2 py-0.5 rounded ${avaliacao.aprovado ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                {avaliacao.aprovado ? 'Aprovada' : 'Pendente'}
+                              </span>
+                            </div>
+                            {avaliacao.produtos && (
+                              <p className="mt-1 text-sm text-muted-foreground">
+                                Produto: {avaliacao.produtos.nome}
+                              </p>
+                            )}
+                            {avaliacao.comentario && (
+                              <p className="mt-2 text-sm">{avaliacao.comentario}</p>
+                            )}
+                            <p className="mt-2 text-xs text-muted-foreground">
+                              {new Date(avaliacao.created_at).toLocaleDateString('pt-BR')} - {avaliacao.email_usuario || 'Sem email'}
+                            </p>
+                          </div>
+                          <div className="flex gap-1">
+                            {!avaliacao.aprovado && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-green-600 hover:bg-green-100"
+                                onClick={() => handleAprovarAvaliacao(avaliacao.id, true)}
+                                title="Aprovar"
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {avaliacao.aprovado && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-yellow-600 hover:bg-yellow-100"
+                                onClick={() => handleAprovarAvaliacao(avaliacao.id, false)}
+                                title="Desaprovar"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                              onClick={() => handleDeleteAvaliacao(avaliacao.id)}
+                              title="Excluir"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Blog Tab */}
+          <TabsContent value="blog">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Blog / Guias de Compra ({posts.length})</CardTitle>
+                <Button onClick={openNewPostDialog} size="sm" className="gap-1">
+                  <Plus className="h-4 w-4" />
+                  Novo Post
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {posts.length === 0 ? (
+                  <p className="py-8 text-center text-muted-foreground">
+                    Nenhum post cadastrado.
+                  </p>
+                ) : (
+                  <div className="max-h-[500px] overflow-y-auto">
+                    <Table>
+                      <TableHeader className="sticky top-0 bg-background z-10">
+                        <TableRow>
+                          <TableHead>Titulo</TableHead>
+                          <TableHead>Categoria</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Views</TableHead>
+                          <TableHead className="text-right">Acoes</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {posts.map((post) => (
+                          <TableRow key={post.id}>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium line-clamp-1">{post.titulo}</p>
+                                <p className="text-xs text-muted-foreground">{post.slug}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <span className="rounded bg-muted px-2 py-1 text-xs">{post.categoria}</span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <span className={`rounded px-2 py-1 text-xs ${post.publicado ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                  {post.publicado ? 'Publicado' : 'Rascunho'}
+                                </span>
+                                {post.destaque && (
+                                  <span className="rounded bg-blue-100 px-2 py-1 text-xs text-blue-700">Destaque</span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>{post.views}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => togglePostPublicado(post)}
+                                  title={post.publicado ? 'Despublicar' : 'Publicar'}
+                                >
+                                  {post.publicado ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => openEditPostDialog(post)}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleDeletePost(post.id)}>
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Config Tab */}
+          <TabsContent value="config">
+            <Card>
+              <CardHeader>
+                <CardTitle>Configuracoes do Site</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="config-mensagem">Mensagem de Compartilhar</Label>
+                    <Textarea
+                      id="config-mensagem"
+                      value={configSite.mensagem_compartilhar}
+                      onChange={(e) => setConfigSite({ ...configSite, mensagem_compartilhar: e.target.value })}
+                      placeholder="Confira as melhores ofertas..."
+                      rows={3}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Esta mensagem sera exibida quando os usuarios compartilharem o site nas redes sociais.
+                    </p>
+                  </div>
+
+                  <div className="flex justify-end pt-4">
+                    <Button onClick={handleSaveConfig} disabled={configSaving}>
+                      {configSaving ? "Salvando..." : "Salvar Configuracoes"}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
 
         {/* Produto Dialog */}
@@ -738,6 +1718,18 @@ export default function AdminPage() {
                   onChange={(e) => setProdutoForm({ ...produtoForm, nome: e.target.value })}
                   placeholder="Nome do produto"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="slug">Slug (URL personalizada)</Label>
+                <Input
+                  id="slug"
+                  value={produtoForm.slug}
+                  onChange={(e) => setProdutoForm({ ...produtoForm, slug: e.target.value })}
+                  placeholder="meu-produto-personalizado"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Deixe vazio para gerar automaticamente a partir do nome
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="descricao">Descricao</Label>
@@ -785,17 +1777,30 @@ export default function AdminPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="preco">Preco (R$) *</Label>
+                  <Label htmlFor="preco">Preço (R$) *</Label>
                   <Input
                     id="preco"
-                    type="number"
-                    step="0.01"
+                    type="text"
+                    inputMode="decimal"
                     value={produtoForm.preco}
-                    onChange={(e) => setProdutoForm({ ...produtoForm, preco: Number(e.target.value) })}
+                    onChange={(e) => setProdutoForm({ ...produtoForm, preco: e.target.value })}
+                    placeholder="Ex: 1.999,99"
+                  />
+                  <p className="text-xs text-muted-foreground">Formato: 1.999,99</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="preco_original">Preço Original (De:)</Label>
+                  <Input
+                    id="preco_original"
+                    type="text"
+                    inputMode="decimal"
+                    value={produtoForm.preco_original}
+                    onChange={(e) => setProdutoForm({ ...produtoForm, preco_original: e.target.value })}
+                    placeholder="Ex: 2.499,99"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="avaliacao">Avaliacao (0-5)</Label>
+                  <Label htmlFor="avaliacao">Avaliação (0-5)</Label>
                   <Input
                     id="avaliacao"
                     type="number"
@@ -910,6 +1915,15 @@ export default function AdminPage() {
                   O slug sera gerado automaticamente a partir do nome.
                 </p>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="cat-icone">URL do Icone (opcional)</Label>
+                <Input
+                  id="cat-icone"
+                  value={categoriaForm.icone}
+                  onChange={(e) => setCategoriaForm({ ...categoriaForm, icone: e.target.value })}
+                  placeholder="https://..."
+                />
+              </div>
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => setCategoriaDialogOpen(false)}>
                   Cancelar
@@ -971,6 +1985,25 @@ export default function AdminPage() {
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
+                <Label htmlFor="cupom-loja">Loja (opcional)</Label>
+                <Select
+                  value={cupomForm.loja_id || "none"}
+                  onValueChange={(value) => setCupomForm({ ...cupomForm, loja_id: value === "none" ? "" : value })}
+                >
+                  <SelectTrigger id="cupom-loja">
+                    <SelectValue placeholder="Selecione uma loja" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhuma loja</SelectItem>
+                    {lojas.map((loja) => (
+                      <SelectItem key={loja.id} value={loja.id}>
+                        {loja.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="cupom-codigo">Codigo *</Label>
                 <Input
                   id="cupom-codigo"
@@ -982,11 +2015,12 @@ export default function AdminPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="cupom-descricao">Descricao</Label>
-                <Input
+                <Textarea
                   id="cupom-descricao"
                   value={cupomForm.descricao}
                   onChange={(e) => setCupomForm({ ...cupomForm, descricao: e.target.value })}
-                  placeholder="10% de desconto"
+                  placeholder="10% de desconto em toda a loja"
+                  rows={3}
                 />
               </div>
               <div className="space-y-2">
@@ -998,11 +2032,222 @@ export default function AdminPage() {
                   onChange={(e) => setCupomForm({ ...cupomForm, validade: e.target.value })}
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="cupom-link">Link da oferta (opcional)</Label>
+                <Input
+                  id="cupom-link"
+                  value={cupomForm.link}
+                  onChange={(e) => setCupomForm({ ...cupomForm, link: e.target.value })}
+                  placeholder="https://..."
+                />
+              </div>
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => setCupomDialogOpen(false)}>
                   Cancelar
                 </Button>
                 <Button onClick={handleSaveCupom} disabled={saving}>
+                  {saving ? "Salvando..." : "Salvar"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Rede Social Dialog */}
+        <Dialog open={redeDialogOpen} onOpenChange={setRedeDialogOpen}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>
+                {editingRedeId ? "Editar Rede Social" : "Nova Rede Social"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="rede-nome">Nome</Label>
+                <Input
+                  id="rede-nome"
+                  value={redeForm.nome}
+                  onChange={(e) => setRedeForm({ ...redeForm, nome: e.target.value })}
+                  placeholder="Instagram"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="rede-icone">Icone (Font Awesome ou URL)</Label>
+                <Input
+                  id="rede-icone"
+                  value={redeForm.icone}
+                  onChange={(e) => setRedeForm({ ...redeForm, icone: e.target.value })}
+                  placeholder="fab fa-instagram"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Exemplos: fab fa-instagram, fab fa-facebook, fab fa-whatsapp, fab fa-youtube, fab fa-tiktok
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="rede-url">URL</Label>
+                <Input
+                  id="rede-url"
+                  value={redeForm.url}
+                  onChange={(e) => setRedeForm({ ...redeForm, url: e.target.value })}
+                  placeholder="https://instagram.com/..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="rede-posicao">Posicao</Label>
+                <Select
+                  value={redeForm.posicao}
+                  onValueChange={(value) => setRedeForm({ ...redeForm, posicao: value })}
+                >
+                  <SelectTrigger id="rede-posicao">
+                    <SelectValue placeholder="Selecione a posicao" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="rodape">Rodape</SelectItem>
+                    <SelectItem value="lateral">Lateral</SelectItem>
+                    <SelectItem value="ambos">Ambos</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="rede-ativo"
+                  checked={redeForm.ativo}
+                  onCheckedChange={(checked) => setRedeForm({ ...redeForm, ativo: checked })}
+                />
+                <Label htmlFor="rede-ativo">Ativo</Label>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setRedeDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleSaveRede} disabled={saving}>
+                  {saving ? "Salvando..." : "Salvar"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Post Dialog */}
+        <Dialog open={postDialogOpen} onOpenChange={setPostDialogOpen}>
+          <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                {editingPostId ? "Editar Post" : "Novo Post"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="post-titulo">Titulo *</Label>
+                <Input
+                  id="post-titulo"
+                  value={postForm.titulo}
+                  onChange={(e) => setPostForm({ ...postForm, titulo: e.target.value })}
+                  placeholder="Como economizar nas compras online"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="post-slug">Slug (URL)</Label>
+                <Input
+                  id="post-slug"
+                  value={postForm.slug}
+                  onChange={(e) => setPostForm({ ...postForm, slug: e.target.value })}
+                  placeholder="como-economizar-nas-compras-online"
+                />
+                <p className="text-xs text-muted-foreground">Deixe vazio para gerar automaticamente</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="post-resumo">Resumo</Label>
+                <Textarea
+                  id="post-resumo"
+                  value={postForm.resumo}
+                  onChange={(e) => setPostForm({ ...postForm, resumo: e.target.value })}
+                  placeholder="Breve descricao do post..."
+                  rows={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="post-conteudo">Conteudo (HTML) *</Label>
+                <Textarea
+                  id="post-conteudo"
+                  value={postForm.conteudo}
+                  onChange={(e) => setPostForm({ ...postForm, conteudo: e.target.value })}
+                  placeholder="<p>Seu conteudo aqui...</p>"
+                  rows={8}
+                />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="post-imagem">Imagem de Capa (URL)</Label>
+                  <Input
+                    id="post-imagem"
+                    value={postForm.imagem_capa}
+                    onChange={(e) => setPostForm({ ...postForm, imagem_capa: e.target.value })}
+                    placeholder="https://..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="post-autor">Autor</Label>
+                  <Input
+                    id="post-autor"
+                    value={postForm.autor}
+                    onChange={(e) => setPostForm({ ...postForm, autor: e.target.value })}
+                    placeholder="SGC"
+                  />
+                </div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="post-categoria">Categoria</Label>
+                  <Select
+                    value={postForm.categoria}
+                    onValueChange={(value) => setPostForm({ ...postForm, categoria: value })}
+                  >
+                    <SelectTrigger id="post-categoria">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Guia de Compra">Guia de Compra</SelectItem>
+                      <SelectItem value="Dicas">Dicas</SelectItem>
+                      <SelectItem value="Promocoes">Promocoes</SelectItem>
+                      <SelectItem value="Tecnologia">Tecnologia</SelectItem>
+                      <SelectItem value="Casa e Jardim">Casa e Jardim</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="post-tags">Tags (separadas por virgula)</Label>
+                  <Input
+                    id="post-tags"
+                    value={postForm.tags}
+                    onChange={(e) => setPostForm({ ...postForm, tags: e.target.value })}
+                    placeholder="economia, compras, dicas"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-6">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="post-publicado"
+                    checked={postForm.publicado}
+                    onCheckedChange={(checked) => setPostForm({ ...postForm, publicado: checked })}
+                  />
+                  <Label htmlFor="post-publicado">Publicado</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="post-destaque"
+                    checked={postForm.destaque}
+                    onCheckedChange={(checked) => setPostForm({ ...postForm, destaque: checked })}
+                  />
+                  <Label htmlFor="post-destaque">Destaque</Label>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setPostDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleSavePost} disabled={saving}>
                   {saving ? "Salvando..." : "Salvar"}
                 </Button>
               </div>

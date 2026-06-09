@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { CouponsClient } from "@/components/coupons-client"
-import { couponRepository, storeRepository } from "@/lib/db"
+import { supabaseCouponRepository } from "@/lib/supabase/coupons"
+import { supabaseStoreRepository } from "@/lib/supabase/stores"
 
 export const metadata: Metadata = {
   title: "Cupons de Desconto Atualizados - Shopee, Amazon, Mercado Livre",
@@ -11,8 +12,9 @@ export const metadata: Metadata = {
 }
 
 export default async function CuponsPage() {
-  const coupons = await couponRepository.getActiveCoupons()
-  const stores = await storeRepository.getActiveStores()
+  // Buscar cupons do Supabase (sem limite para mostrar todos)
+  const coupons = await supabaseCouponRepository.getAllCoupons()
+  const stores = await supabaseStoreRepository.getAllStores()
   const storeNames = stores.map(s => s.name)
 
   return (

@@ -154,6 +154,7 @@ export interface Coupon {
   discountType: 'percentage' | 'fixed' | 'freeShipping' | 'other'
   discountValue?: number
   discountText: string // Ex: "10% OFF", "Frete Grátis"
+  link?: string // Link da oferta (opcional)
   
   // Condições
   minPurchase?: number

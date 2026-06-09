@@ -1,12 +1,19 @@
-import { Star, ThumbsUp, ThumbsDown, MessageSquare, CheckCircle } from "lucide-react"
+"use client"
+
+import { useState } from "react"
+import { Star, ThumbsUp, ThumbsDown, MessageSquare, CheckCircle, Send } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import type { ProductWithRelations, Review } from "@/lib/db"
 
 interface ProductReviewsProps {
   product: ProductWithRelations
   reviews: Review[] // Reviews vinculados ao productId interno
+  supabaseProductId?: string // ID do produto no Supabase para envio de avaliações
 }
 
 function RatingBreakdown({ reviews, totalReviews }: { reviews: Review[]; totalReviews: number }) {
@@ -104,22 +111,141 @@ function ReviewCard({ review }: { review: Review }) {
   )
 }
 
-export function ProductReviews({ product, reviews }: ProductReviewsProps) {
+export function ProductReviews({ product, reviews, supabaseProductId }: ProductReviewsProps) {
+  const [showForm, setShowForm] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [form, setForm] = useState({
+    nome_usuario: "",
+    rede_social: "",
+    nota: 5,
+    comentario: "",
+  })
+
   const avgRating = reviews.length > 0
     ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
     : product.rating
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!supabaseProductId) return
+    setSubmitting(true)
+
+    try {
+      const res = await fetch("/api/avaliacoes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          produto_id: supabaseProductId,
+          ...form,
+        }),
+      })
+
+      if (res.ok) {
+        setSubmitted(true)
+        setShowForm(false)
+        setForm({ nome_usuario: "", rede_social: "", nota: 5, comentario: "" })
+      } else {
+        const error = await res.json()
+        alert("Erro: " + error.error)
+      }
+    } catch {
+      alert("Erro ao enviar avaliação")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const renderInteractiveStars = (nota: number, onChange: (n: number) => void) => (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button key={n} type="button" onClick={() => onChange(n)} className="cursor-pointer">
+          <Star className={`h-6 w-6 ${n <= nota ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} />
+        </button>
+      ))}
+    </div>
+  )
 
   return (
     <section className="mt-12 lg:mt-16">
       <Separator className="mb-8" />
 
-      <div className="flex items-center gap-2">
-        <MessageSquare className="h-5 w-5 text-primary" />
-        <h2 className="font-[family-name:var(--font-heading)] text-xl font-bold text-foreground md:text-2xl">
-          Avaliações
-        </h2>
-        <Badge variant="secondary">{product.reviewCount}</Badge>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="h-5 w-5 text-primary" />
+          <h2 className="font-[family-name:var(--font-heading)] text-xl font-bold text-foreground md:text-2xl">
+            Avaliações
+          </h2>
+          <Badge variant="secondary">{product.reviewCount}</Badge>
+        </div>
+        {supabaseProductId && !showForm && !submitted && (
+          <Button onClick={() => setShowForm(true)} variant="outline" size="sm">
+            Avaliar Produto
+          </Button>
+        )}
       </div>
+
+      {/* Mensagem de sucesso */}
+      {submitted && (
+        <div className="mt-4 rounded-lg bg-green-50 p-4 text-green-700">
+          Obrigado pela sua avaliação! Ela será publicada após moderação.
+        </div>
+      )}
+
+      {/* Formulário de avaliação */}
+      {showForm && supabaseProductId && (
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4 rounded-xl border border-border bg-card p-6">
+          <h4 className="font-semibold">Deixe sua avaliação</h4>
+          <p className="text-xs text-muted-foreground">
+            Se preferir não se identificar, aparecerá como &quot;Usuário SGC&quot;
+          </p>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Sua nota *</label>
+            {renderInteractiveStars(form.nota, (n) => setForm({ ...form, nota: n }))}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Seu comentário *</label>
+            <Textarea
+              value={form.comentario}
+              onChange={(e) => setForm({ ...form, comentario: e.target.value })}
+              placeholder="Conte sua experiência com o produto..."
+              rows={3}
+              required
+            />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Seu nome (opcional)</label>
+              <Input
+                value={form.nome_usuario}
+                onChange={(e) => setForm({ ...form, nome_usuario: e.target.value })}
+                placeholder="João Silva"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Sua rede social (opcional)</label>
+              <Input
+                value={form.rede_social}
+                onChange={(e) => setForm({ ...form, rede_social: e.target.value })}
+                placeholder="@seu_instagram"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <Button type="submit" disabled={submitting || !form.comentario.trim()} className="gap-2">
+              <Send className="h-4 w-4" />
+              {submitting ? "Enviando..." : "Enviar Avaliação"}
+            </Button>
+            <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+              Cancelar
+            </Button>
+          </div>
+        </form>
+      )}
 
       <div className="mt-6 grid gap-8 lg:grid-cols-3">
         {/* Rating Summary */}
@@ -144,10 +270,6 @@ export function ProductReviews({ product, reviews }: ProductReviewsProps) {
           <Separator className="my-4" />
 
           <RatingBreakdown reviews={reviews} totalReviews={reviews.length} />
-
-          <p className="mt-4 text-center text-xs text-muted-foreground">
-            Em breve você poderá deixar sua avaliação
-          </p>
         </div>
 
         {/* Review List */}
@@ -158,9 +280,14 @@ export function ProductReviews({ product, reviews }: ProductReviewsProps) {
             ))
           ) : (
             <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-12 text-center">
-              <MessageSquare className="mb-3 h-10 w-10 text-muted-foreground/40" />
-              <p className="text-sm font-medium text-foreground">Nenhuma avaliação ainda</p>
-              <p className="mt-1 text-xs text-muted-foreground">Este produto ainda não possui avaliações de usuários.</p>
+              <Star className="mb-3 h-10 w-10 text-primary/40" />
+              <p className="text-sm font-medium text-foreground">Seja o primeiro a avaliar este produto!</p>
+              <p className="mt-1 text-xs text-muted-foreground">Sua opinião ajuda outros compradores a tomar decisões.</p>
+              {supabaseProductId && !showForm && !submitted && (
+                <Button onClick={() => setShowForm(true)} variant="outline" size="sm" className="mt-4">
+                  Deixar Avaliação
+                </Button>
+              )}
             </div>
           )}
         </div>

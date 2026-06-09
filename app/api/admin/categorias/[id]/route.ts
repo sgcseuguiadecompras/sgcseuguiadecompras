@@ -35,6 +35,7 @@ export async function PUT(
     .update({
       nome: body.nome,
       slug: slug,
+      icone: body.icone || null,
     })
     .eq("id", id)
     .select()
